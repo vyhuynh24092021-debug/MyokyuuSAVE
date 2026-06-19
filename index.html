@@ -1,1467 +1,1943 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MerStor WIP</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root{
-      --bg:#ffffff;
-      --panel:#f6f8fa;
-      --panel-2:#eef2f6;
-      --border:#d0d7de;
-      --text:#1f2328;
-      --muted:#656d76;
-      --accent:#0969da;
-      --accent-soft:#dbeafe;
-      --hover:#eaf1fb;
-      --badge-bg:#ddf4ff;
-      --badge-text:#0550ae;
-      --shadow:0 10px 30px rgba(0,0,0,.08);
-      --header-h:56px;
-      --sidebar-w:290px;
-      --content-max:1200px;
-    }
-
-    [data-theme="dark"]{
-      --bg:#0d1117;
-      --panel:#161b22;
-      --panel-2:#0f141b;
-      --border:#30363d;
-      --text:#e6edf3;
-      --muted:#8b949e;
-      --accent:#58a6ff;
-      --accent-soft:#1c2d3e;
-      --hover:#1c2433;
-      --badge-bg:#1c2d3e;
-      --badge-text:#58a6ff;
-      --shadow:0 10px 30px rgba(0,0,0,.32);
-    }
-
-    html, body { height: 100%; }
-    body{
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      overflow: hidden;
-      overscroll-behavior: none;
-    }
-
-    button, a { font: inherit; }
-    button { -webkit-tap-highlight-color: transparent; }
-
-    .app{
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-
-    header{
-      height: var(--header-h);
-      flex: 0 0 var(--header-h);
-      display:flex;
-      align-items:center;
-      gap: 12px;
-      padding: 0 14px;
-      border-bottom: 1px solid var(--border);
-      background: var(--panel);
-      z-index: 40;
-    }
-
-    .icon-btn{
-      width: 38px;
-      height: 38px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--bg);
-      display:grid;
-      place-items:center;
-      cursor:pointer;
-      flex: 0 0 auto;
-      box-shadow: var(--shadow);
-      color: var(--text);
-      touch-action: manipulation;
-      user-select: none;
-    }
-
-    .menu-lines{
-      width: 16px;
-      display: grid;
-      gap: 3px;
-    }
-    .menu-lines span{
-      height: 2px;
-      border-radius: 999px;
-      background: var(--text);
-      display:block;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      min-width: 0;
-    }
-    .brand-title{
-      font-size: 15px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .badge{
-      font-size: 11px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: var(--badge-bg);
-      color: var(--badge-text);
-      white-space: nowrap;
-    }
-
-    .spacer{ flex:1; }
-
-    .layout{
-      flex: 1;
-      min-height: 0;
-      display: flex;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .overlay{
-      position: fixed;
-      inset: var(--header-h) 0 0 0;
-      background: rgba(0,0,0,.35);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .2s ease;
-      z-index: 35;
-    }
-    .overlay.show{
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .sidebar{
-      width: var(--sidebar-w);
-      flex: 0 0 var(--sidebar-w);
-      border-right: 1px solid var(--border);
-      background: var(--panel);
-      overflow-y: auto;
-      overflow-x: hidden;
-      min-height: 0;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      transition: width .22s ease, flex-basis .22s ease, transform .22s ease;
-      z-index: 36;
-    }
-
-    .sidebar-inner{
-      padding-bottom: 12px;
-    }
-
-    .sidebar-section{
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .userbox{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      min-width: 0;
-    }
-    .avatar{
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), #7c3aed);
-      display:grid;
-      place-items:center;
-      color:#fff;
-      font-weight: 900;
-      flex: 0 0 auto;
-    }
-    .user-meta{
-      min-width: 0;
-    }
-    .user-name{
-      font-size: 14px;
-      font-weight: 800;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .user-handle{
-      font-size: 12px;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .side-actions{
-      display:flex;
-      gap: 8px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-
-    .pill{
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      cursor:pointer;
-      touch-action: manipulation;
-      user-select: none;
-    }
-    .pill:hover{
-      background: var(--hover);
-    }
-
-    .nav-title{
-      padding: 10px 14px 6px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: var(--muted);
-      font-weight: 900;
-    }
-
-    .tree{
-      display:flex;
-      flex-direction: column;
-      padding: 4px 0 10px;
-      gap: 2px;
-    }
-
-    .tree-home{
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      padding: 10px 14px;
-      cursor:pointer;
-      user-select:none;
-      font-size: 13px;
-      color: var(--text);
-      border-left: 3px solid transparent;
-      touch-action: manipulation;
-    }
-    .tree-home:hover{ background: var(--hover); }
-    .tree-home.active{
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-weight: 700;
-      border-left-color: var(--accent);
-    }
-
-    .tree-node{
-      --depth: 0;
-      display:flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    .tree-row{
-      display:flex;
-      align-items:center;
-      gap: 4px;
-      min-width: 0;
-      padding: 2px 10px 2px calc(14px + (var(--depth) * 14px));
-    }
-
-    .tree-expander{
-      width: 24px;
-      height: 24px;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      cursor:pointer;
-      flex: 0 0 auto;
-      border-radius: 6px;
-    }
-    .tree-expander:hover{
-      background: var(--hover);
-      color: var(--text);
-    }
-
-    .tree-select{
-      flex: 1;
-      min-width: 0;
-      border: none;
-      background: transparent;
-      color: var(--text);
-      cursor:pointer;
-      text-align: left;
-      display:flex;
-      align-items:center;
-      gap: 8px;
-      padding: 7px 8px;
-      border-radius: 8px;
-      user-select:none;
-      touch-action: manipulation;
-    }
-    .tree-select:hover{
-      background: var(--hover);
-    }
-
-    .tree-select.active{
-      background: var(--accent-soft);
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    .tree-children{
-      display:none;
-    }
-    .tree-node.open > .tree-children{
-      display:block;
-    }
-    .tree-node.open > .tree-row .tree-expander{
-      transform: rotate(90deg);
-    }
-
-    .children-inner{
-      display:flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .main{
-      flex: 1;
-      min-width: 0;
-      min-height: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      padding: 18px;
-    }
-
-    .content-wrap{
-      max-width: var(--content-max);
-      margin: 0 auto;
-      min-height: 100%;
-      display:flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .view{
-      display:none;
-      min-width: 0;
-    }
-    .view.show{ display:block; }
-
-    .hero{
-      padding: 16px;
-      border: 1px solid var(--border);
-      background: var(--panel);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-    }
-
-    .hero-top{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-
-    .hero-title{
-      font-size: 20px;
-      font-weight: 900;
-      word-break: break-word;
-    }
-
-    .hero-sub{
-      font-size: 13px;
-      line-height: 1.65;
-      color: var(--muted);
-    }
-
-    .section-head{
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 2px 0 10px;
-    }
-
-    .section-head h2{
-      font-size: 17px;
-      font-weight: 900;
-    }
-
-    .count{
-      font-size: 12px;
-      color: var(--muted);
-      background: var(--panel);
-      border: 1px solid var(--border);
-      padding: 4px 9px;
-      border-radius: 999px;
-    }
-
-    .crumbs{
-      display:flex;
-      align-items:center;
-      flex-wrap: wrap;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--muted);
-      margin: 0 0 12px;
-      user-select: none;
-    }
-
-    .crumb{
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      cursor:pointer;
-      padding: 2px 4px;
-      border-radius: 6px;
-    }
-    .crumb:hover{
-      background: var(--hover);
-      color: var(--text);
-    }
-    .crumb.active{
-      color: var(--text);
-      font-weight: 800;
-      cursor: default;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 12px;
-    }
-
-    .card{
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: var(--panel);
-      padding: 14px;
-      box-shadow: var(--shadow);
-      transition: transform .14s ease, border-color .14s ease;
-      min-width: 0;
-    }
-    .card:hover{
-      transform: translateY(-1px);
-      border-color: var(--accent);
-    }
-
-    .card-name{
-      font-size: 13px;
-      font-weight: 800;
-      word-break: break-word;
-      line-height: 1.4;
-    }
-
-    .card-meta{
-      margin-top: 6px;
-      display:flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items:center;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .tag{
-      padding: 3px 8px;
-      border-radius: 999px;
-      background: var(--badge-bg);
-      color: var(--badge-text);
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    .card-foot{
-      margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .mini-btn{
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      border-radius: 10px;
-      padding: 7px 10px;
-      font-size: 12px;
-      cursor:pointer;
-      text-decoration:none;
-      white-space: nowrap;
-      touch-action: manipulation;
-      user-select: none;
-    }
-    .mini-btn:hover{
-      background: var(--hover);
-    }
-    .mini-btn.primary{
-      border-color: var(--accent);
-      color: var(--accent);
-      background: var(--accent-soft);
-    }
-
-    .preview-wrap{
-      border: 1px solid var(--border);
-      background: var(--panel);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-    }
-
-    .preview-head{
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
-    }
-
-    .preview-name{
-      font-size: 14px;
-      font-weight: 900;
-      word-break: break-word;
-    }
-
-    .preview-body{
-      padding: 14px;
-      min-height: 130px;
-      max-height: min(72vh, 780px);
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .preview-text{
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: 13px;
-      line-height: 1.65;
-      color: var(--text);
-    }
-
-    .preview-md{
-      font-size: 14px;
-      line-height: 1.75;
-    }
-    .preview-md h1{ font-size: 24px; margin: 0 0 12px; }
-    .preview-md h2{ font-size: 19px; margin: 18px 0 8px; }
-    .preview-md h3{ font-size: 16px; margin: 14px 0 6px; }
-    .preview-md p, .preview-md li{ color: var(--muted); }
-    .preview-md a{ color: var(--accent); text-decoration:none; }
-    .preview-md a:hover{ text-decoration: underline; }
-    .preview-md pre{
-      overflow:auto;
-      padding: 12px;
-      border-radius: 12px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-    }
-    .preview-md code{
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 2px 5px;
-      border-radius: 6px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-size: .92em;
-    }
-    .preview-md blockquote{
-      border-left: 3px solid var(--border);
-      margin: 0;
-      padding-left: 12px;
-      color: var(--muted);
-    }
-    .preview-md img{
-      max-width: 100%;
-      border-radius: 10px;
-    }
-    .preview-md table{
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      margin: 10px 0;
-    }
-    .preview-md th,
-    .preview-md td{
-      border: 1px solid var(--border);
-      padding: 8px 10px;
-      text-align: left;
-    }
-    .preview-md th{
-      background: var(--panel-2);
-    }
-
-    .state{
-      padding: 18px 4px;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .spinner{
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      border: 2px solid var(--border);
-      border-top-color: var(--accent);
-      animation: spin .7s linear infinite;
-      display:inline-block;
-      vertical-align: middle;
-      margin-right: 8px;
-      flex: 0 0 auto;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .hidden{ display:none !important; }
-
-    .settings-modal{
-      position: fixed;
-      inset: 0;
-      display:none;
-      z-index: 60;
-    }
-    .settings-modal.open{ display:block; }
-
-    .settings-backdrop{
-      position:absolute;
-      inset: 0;
-      background: rgba(0,0,0,.42);
-    }
-
-    .settings-sheet{
-      position:absolute;
-      top: calc(var(--header-h) + 10px);
-      right: 10px;
-      width: min(360px, calc(100vw - 20px));
-      max-height: calc(100vh - var(--header-h) - 20px);
-      overflow:auto;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      padding: 14px;
-    }
-
-    .settings-title{
-      font-size: 12px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
-
-    .settings-row{
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .settings-row:last-child{
-      border-bottom: none;
-    }
-
-    .settings-text{
-      display:flex;
-      flex-direction: column;
-      gap: 3px;
-      min-width: 0;
-    }
-
-    .settings-label{
-      font-size: 13px;
-      font-weight: 800;
-    }
-    .settings-desc{
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .toggle{
-      width: 38px;
-      height: 20px;
-      background: var(--border);
-      border-radius: 999px;
-      position: relative;
-      cursor: pointer;
-      flex: 0 0 auto;
-      transition: background .2s ease;
-    }
-    .toggle::after{
-      content:'';
-      position:absolute;
-      top: 2px;
-      left: 2px;
-      width: 16px;
-      height: 16px;
-      background: #fff;
-      border-radius: 50%;
-      transition: left .2s ease;
-      box-shadow: 0 1px 4px rgba(0,0,0,.25);
-    }
-    .toggle.on{
-      background: var(--accent);
-    }
-    .toggle.on::after{
-      left: 20px;
-    }
-
-    @media (max-width: 980px){
-      .sidebar{
-        position: fixed;
-        top: var(--header-h);
-        left: 0;
-        bottom: 0;
-        transform: translateX(-102%);
-        box-shadow: var(--shadow);
-        width: min(var(--sidebar-w), 86vw);
-        flex-basis: auto;
-      }
-      .sidebar.open{
-        transform: translateX(0);
-      }
-      .main{
-        padding: 14px;
-      }
-      .grid{
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 560px){
-      .brand-title{
-        font-size: 14px;
-      }
-      .hero-title{
-        font-size: 18px;
-      }
-      .section-head h2{
-        font-size: 16px;
-      }
-      .preview-body{
-        max-height: none;
-      }
-      .settings-sheet{
-        left: 10px;
-        right: 10px;
-        width: auto;
-      }
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>MerStor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js">
+    </script>
+    <style>
+        /* ─── RESET & VARIABLES ─── */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #fafafa;
+            --surface: #ffffff;
+            --surface2: #f0f0f0;
+            --border: #d4d4d4;
+            --text: #1a1a1a;
+            --text-muted: #6b6b6b;
+            --accent: #1a1a1a;
+            --accent-bg: #e8e8e8;
+            --active-bg: #d0d0d0;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --radius: 0px;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --readme-size: 15px;
+            --transition: 0.25s ease;
+            --underscore: '_________________________________';
+        }
+        [data-theme="dark"] {
+            --bg: #121212;
+            --surface: #1e1e1e;
+            --surface2: #2a2a2a;
+            --border: #3a3a3a;
+            --text: #eeeeee;
+            --text-muted: #9a9a9a;
+            --accent: #eeeeee;
+            --accent-bg: #2a2a2a;
+            --active-bg: #333333;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            transition: background var(--transition), color var(--transition);
+            line-height: 1.5;
+        }
+
+        /* ─── SCROLLBAR ─── */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 0px;
+        }
+
+        /* ─── UNDERSCORE BUTTON UTILITY ─── */
+        .btn-underscore {
+            display: inline-block;
+            font-family: var(--font);
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 6px 14px;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all var(--transition);
+            user-select: none;
+            text-align: center;
+            line-height: 1.4;
+            position: relative;
+            text-decoration: none;
+            border-radius: 0px;
+        }
+        .btn-underscore:hover {
+            background: var(--active-bg);
+            border-color: var(--text);
+        }
+        .btn-underscore:active {
+            transform: scale(0.97);
+        }
+        .btn-underscore .uscore {
+            display: block;
+            font-size: 0.5rem;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            font-weight: 300;
+            line-height: 1;
+            margin-top: 1px;
+            word-break: break-all;
+            max-width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .btn-underscore .label {
+            display: block;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+        .btn-underscore .label+.uscore {
+            margin-top: 2px;
+        }
+
+        .btn-underscore.primary {
+            background: var(--text);
+            color: var(--bg);
+            border-color: var(--text);
+        }
+        .btn-underscore.primary:hover {
+            opacity: 0.8;
+        }
+        .btn-underscore.primary .uscore {
+            color: var(--bg);
+            opacity: 0.6;
+        }
+
+        .btn-underscore.small {
+            padding: 4px 10px;
+            font-size: 0.6rem;
+        }
+        .btn-underscore.small .uscore {
+            font-size: 0.4rem;
+        }
+
+        .btn-underscore.toggle-on {
+            background: var(--text);
+            color: var(--bg);
+            border-color: var(--text);
+        }
+        .btn-underscore.toggle-on .uscore {
+            color: var(--bg);
+            opacity: 0.6;
+        }
+        .btn-underscore.toggle-off {
+            background: var(--surface2);
+            color: var(--text-muted);
+            border-color: var(--border);
+        }
+        .btn-underscore.toggle-off .uscore {
+            color: var(--text-muted);
+            opacity: 0.4;
+        }
+
+        /* ─── HEADER ─── */
+        header {
+            height: 56px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            gap: 10px;
+            flex-shrink: 0;
+            transition: background var(--transition), border var(--transition);
+            position: relative;
+            z-index: 20;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .menu-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            transition: all var(--transition);
+            flex-shrink: 0;
+            padding: 0;
+            border-radius: 0px;
+        }
+        .menu-btn:hover {
+            background: var(--active-bg);
+            border-color: var(--text);
+        }
+        .menu-btn span {
+            display: block;
+            width: 14px;
+            height: 1.5px;
+            background: var(--text);
+            border-radius: 0px;
+            transition: background var(--transition);
+        }
+        .menu-btn span:nth-child(2) {
+            width: 10px;
+        }
+        .menu-btn span:nth-child(3) {
+            width: 6px;
+        }
+        .menu-btn.active span {
+            background: var(--text-muted);
+        }
+
+        .site-name {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            white-space: nowrap;
+        }
+        .site-name .hl {
+            font-weight: 300;
+            color: var(--text-muted);
+        }
+        .wip-badge {
+            font-size: 0.55rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 1px 8px;
+            background: var(--surface2);
+            white-space: nowrap;
+        }
+
+        .header-btn {
+            height: 36px;
+            padding: 0 14px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            cursor: pointer;
+            transition: all var(--transition);
+            font-family: var(--font);
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border-radius: 0px;
+        }
+        .header-btn:hover {
+            background: var(--active-bg);
+            border-color: var(--text);
+        }
+        .header-btn.active {
+            background: var(--text);
+            color: var(--bg);
+            border-color: var(--text);
+        }
+        .header-btn .us {
+            font-size: 0.45rem;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            font-weight: 300;
+            display: block;
+            max-width: 60px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .header-btn.active .us {
+            color: var(--bg);
+            opacity: 0.6;
+        }
+
+        /* ─── SETTINGS DROPDOWN ─── */
+        .settings-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            width: min(340px, calc(100vw - 20px));
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            padding: 18px 16px 16px;
+            display: none;
+            z-index: 100;
+            opacity: 0;
+            transform: translateY(-6px);
+            transition: opacity 0.2s, transform 0.2s;
+            border-radius: 0px;
+        }
+        .settings-dropdown.open {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .settings-dropdown::-webkit-scrollbar {
+            width: 3px;
+        }
+        .settings-dropdown::-webkit-scrollbar-thumb {
+            background: var(--border);
+        }
+
+        .sd-title {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sd-title .us {
+            font-size: 0.45rem;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            opacity: 0.4;
+            font-weight: 300;
+        }
+
+        .sd-group {
+            margin-bottom: 14px;
+        }
+        .sd-group:last-child {
+            margin-bottom: 0;
+        }
+        .sd-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 3px;
+            letter-spacing: 0.02em;
+        }
+        .sd-label .hint {
+            font-weight: 400;
+            color: var(--text-muted);
+            font-size: 0.6rem;
+        }
+        .sd-desc {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            line-height: 1.4;
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 3px 0;
+            gap: 12px;
+        }
+        .toggle-row span {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .sd-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 12px 0;
+        }
+
+        .sd-avatar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 2px 0;
+        }
+        .sd-avatar {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text);
+            flex-shrink: 0;
+            border-radius: 0px;
+        }
+        .sd-user {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .sd-handle {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        .sd-input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.75rem;
+            font-family: var(--font);
+            transition: border var(--transition);
+            outline: none;
+            border-radius: 0px;
+        }
+        .sd-input:focus {
+            border-color: var(--text);
+        }
+        .sd-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .sd-range-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .sd-range {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 2px;
+            border-radius: 0px;
+            background: var(--border);
+            outline: none;
+            transition: background 0.2s;
+        }
+        .sd-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 0px;
+            background: var(--text);
+            cursor: pointer;
+            border: none;
+            transition: transform 0.15s;
+        }
+        .sd-range::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        .sd-range::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 0px;
+            background: var(--text);
+            cursor: pointer;
+            border: none;
+        }
+        .sd-range-val {
+            font-size: 0.7rem;
+            font-weight: 600;
+            min-width: 28px;
+            text-align: center;
+            color: var(--text);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .sd-footer {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .sd-footer .ver {
+            font-size: 0.55rem;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+        }
+        .sd-footer .reset-btn {
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text);
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 4px 8px;
+            transition: background 0.2s;
+            font-family: var(--font);
+            border: 1px solid var(--border);
+            background: var(--surface2);
+        }
+        .sd-footer .reset-btn:hover {
+            background: var(--active-bg);
+            border-color: var(--text);
+        }
+
+        /* ─── LAYOUT ─── */
+        .layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ─── SIDEBAR ─── */
+        .sidebar {
+            width: 260px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: width 0.3s ease, opacity 0.25s ease, background var(--transition), border var(--transition);
+            opacity: 1;
+        }
+        .sidebar.collapsed {
+            width: 0;
+            opacity: 0;
+            overflow: hidden;
+            border-right: none;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 3px;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--border);
+        }
+
+        #navPanel {
+            padding: 6px 0 16px;
+            flex: 1;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 16px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text);
+            transition: background 0.12s, color 0.12s;
+            user-select: none;
+            border-left: 2px solid transparent;
+            letter-spacing: 0.02em;
+        }
+        .nav-item:hover {
+            background: var(--surface2);
+        }
+        .nav-item.active {
+            background: var(--active-bg);
+            border-left-color: var(--text);
+            font-weight: 600;
+        }
+        .nav-item .nav-us {
+            font-size: 0.45rem;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            font-weight: 300;
+            opacity: 0.4;
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+        }
+
+        .cat-header {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px 4px;
+            cursor: pointer;
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            user-select: none;
+            transition: color 0.2s;
+        }
+        .cat-header:hover {
+            color: var(--text);
+        }
+        .cat-chev {
+            margin-left: auto;
+            font-size: 0.5rem;
+            transition: transform 0.25s;
+            opacity: 0.4;
+            font-weight: 300;
+            letter-spacing: 0.1em;
+        }
+        .cat-header.open .cat-chev {
+            transform: rotate(90deg);
+        }
+        .cat-sub {
+            display: none;
+            overflow: hidden;
+        }
+        .cat-sub.open {
+            display: block;
+        }
+        .cat-sub .nav-item {
+            padding-left: 34px;
+            font-size: 0.7rem;
+            font-weight: 400;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 12px;
+        }
+
+        /* ─── MAIN ─── */
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 18px 20px;
+            background: var(--bg);
+            transition: background var(--transition), padding var(--transition);
+        }
+        .main.compact {
+            padding: 12px 14px;
+        }
+        .main::-webkit-scrollbar {
+            width: 4px;
+        }
+        .main::-webkit-scrollbar-thumb {
+            background: var(--border);
+        }
+
+        /* ─── README ─── */
+        .readme-wrap {
+            max-width: 780px;
+            margin: 0 auto;
+        }
+        .readme-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: opacity 0.3s, height 0.3s, margin 0.3s, padding 0.3s;
+            overflow: hidden;
+            letter-spacing: 0.02em;
+        }
+        .readme-head.hidden {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            padding: 0;
+            border-bottom: none;
+            pointer-events: none;
+        }
+        .readme-head .rh-us {
+            font-size: 0.5rem;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            opacity: 0.3;
+            font-weight: 300;
+        }
+        .readme-head .rh-name {
+            color: var(--text);
+        }
+        .readme-head .rh-badge {
+            font-size: 0.5rem;
+            font-weight: 400;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0 6px;
+            background: var(--surface2);
+            letter-spacing: 0.04em;
+        }
+
+        .readme-body {
+            font-size: var(--readme-size, 15px);
+            line-height: 1.8;
+            color: var(--text);
+            transition: font-size 0.2s;
+        }
+        .readme-body h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            margin: 0 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            letter-spacing: -0.02em;
+        }
+        .readme-body h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 22px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+            letter-spacing: -0.01em;
+        }
+        .readme-body h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin: 18px 0 8px;
+        }
+        .readme-body p {
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+        .readme-body a {
+            color: var(--text);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            text-decoration-thickness: 1px;
+        }
+        .readme-body a:hover {
+            text-decoration-thickness: 2px;
+        }
+        .readme-body code {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 1px 6px;
+            font-size: 0.85em;
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            color: var(--text);
+            border-radius: 0px;
+        }
+        .readme-body pre {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 14px 16px;
+            overflow-x: auto;
+            margin-bottom: 16px;
+            border-radius: 0px;
+        }
+        .readme-body pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+        .readme-body ul,
+        .readme-body ol {
+            padding-left: 24px;
+            margin-bottom: 14px;
+            color: var(--text-muted);
+        }
+        .readme-body li {
+            margin-bottom: 4px;
+        }
+        .readme-body blockquote {
+            border-left: 2px solid var(--border);
+            padding-left: 16px;
+            color: var(--text-muted);
+            margin: 0 0 14px;
+            font-style: italic;
+        }
+        .readme-body img {
+            max-width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 0px;
+        }
+        .readme-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+        }
+        .readme-body th,
+        .readme-body td {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+        .readme-body th {
+            background: var(--surface2);
+            font-weight: 600;
+        }
+        .readme-body hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 20px 0;
+        }
+        .readme-body strong {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        /* ─── FILES VIEW ─── */
+        .src-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+        .src-head h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        .src-count {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 1px 10px;
+            background: var(--surface2);
+            font-weight: 500;
+            letter-spacing: 0.04em;
+        }
+        .src-search {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 0 10px;
+            transition: border var(--transition);
+            border-radius: 0px;
+            flex: 1 1 140px;
+            max-width: 220px;
+        }
+        .src-search:focus-within {
+            border-color: var(--text);
+        }
+        .src-search input {
+            border: none;
+            background: transparent;
+            padding: 6px 0;
+            font-size: 0.7rem;
+            color: var(--text);
+            outline: none;
+            width: 100%;
+            font-family: var(--font);
+        }
+        .src-search input::placeholder {
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+        }
+        .src-search .srch-us {
+            font-size: 0.45rem;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            opacity: 0.3;
+            font-weight: 300;
+        }
+
+        .src-sort {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .src-sort .sort-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            font-size: 0.55rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: var(--font);
+            border-radius: 0px;
+        }
+        .src-sort .sort-btn:hover {
+            background: var(--active-bg);
+            color: var(--text);
+            border-color: var(--text);
+        }
+        .src-sort .sort-btn.active {
+            background: var(--text);
+            color: var(--bg);
+            border-color: var(--text);
+        }
+
+        .src-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .src-card {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            padding: 12px 14px;
+            transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+            cursor: default;
+            border-radius: 0px;
+        }
+        .src-card:hover {
+            border-color: var(--text);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+        .card-name {
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+            word-break: break-all;
+            letter-spacing: 0.01em;
+        }
+        .card-name .card-us {
+            font-size: 0.45rem;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            opacity: 0.25;
+            font-weight: 300;
+            margin-right: 4px;
+        }
+        .card-size {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+        .card-foot {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+        .file-tag {
+            font-size: 0.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 0 6px;
+            background: var(--surface2);
+        }
+        .dl-btn {
+            font-size: 0.55rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text);
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 3px 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+            font-family: var(--font);
+            border-radius: 0px;
+        }
+        .dl-btn:hover {
+            background: var(--text);
+            color: var(--bg);
+            border-color: var(--text);
+        }
+        .src-empty {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            padding: 24px 0;
+            text-align: center;
+            grid-column: 1 / -1;
+            letter-spacing: 0.04em;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            padding: 20px 0;
+            letter-spacing: 0.04em;
+        }
+        .spin {
+            width: 14px;
+            height: 14px;
+            border: 1.5px solid var(--border);
+            border-top-color: var(--text);
+            border-radius: 0px;
+            animation: spin 0.7s linear infinite;
+            flex-shrink: 0;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ─── BREADCRUMB ─── */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            padding: 2px 0;
+            letter-spacing: 0.02em;
+        }
+        .breadcrumb .crumb {
+            color: var(--text);
+            cursor: pointer;
+            transition: color 0.15s;
+            font-weight: 500;
+            border-bottom: 1px solid transparent;
+        }
+        .breadcrumb .crumb:hover {
+            border-bottom-color: var(--text);
+        }
+        .breadcrumb .sep {
+            color: var(--border);
+            font-weight: 300;
+            font-size: 0.5rem;
+        }
+        .breadcrumb .current {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+        .breadcrumb .bc-us {
+            font-size: 0.4rem;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            opacity: 0.2;
+            font-weight: 300;
+        }
+
+        /* ─── TOAST ─── */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            font-size: 0.7rem;
+            color: var(--text);
+            box-shadow: var(--shadow);
+            opacity: 0;
+            transition: opacity 0.35s, transform 0.35s;
+            z-index: 200;
+            pointer-events: none;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            border-radius: 0px;
+            max-width: calc(100vw - 32px);
+            text-align: center;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast .toast-us {
+            font-size: 0.45rem;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            opacity: 0.3;
+            font-weight: 300;
+            margin-right: 6px;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 220px;
+            }
+            .main {
+                padding: 14px 14px;
+            }
+            .settings-dropdown {
+                width: min(300px, calc(100vw - 16px));
+                right: 6px;
+                padding: 14px 12px;
+            }
+            .src-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .src-search {
+                max-width: 160px;
+                flex: 1 1 100px;
+            }
+            .readme-wrap {
+                max-width: 100%;
+            }
+            .src-head h2 {
+                font-size: 0.9rem;
+            }
+            header {
+                padding: 0 10px;
+                height: 50px;
+            }
+            .site-name {
+                font-size: 0.9rem;
+            }
+            .wip-badge {
+                font-size: 0.5rem;
+                padding: 0 6px;
+            }
+            .header-btn {
+                padding: 0 10px;
+                font-size: 0.55rem;
+                height: 32px;
+            }
+            .menu-btn {
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .src-grid {
+                grid-template-columns: 1fr;
+            }
+            .main {
+                padding: 10px 10px;
+            }
+            .sidebar {
+                width: 190px;
+            }
+            .src-head {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 6px;
+            }
+            .src-search {
+                max-width: 100%;
+                flex: 1;
+            }
+            .src-sort {
+                justify-content: flex-start;
+            }
+            .settings-dropdown {
+                width: calc(100vw - 12px);
+                right: 4px;
+                top: 54px;
+                padding: 12px 10px;
+            }
+            .header-right .header-btn .us {
+                max-width: 40px;
+            }
+            .readme-body {
+                font-size: calc(var(--readme-size, 15px) * 0.95);
+            }
+            .readme-body h1 {
+                font-size: 1.4rem;
+            }
+            .readme-body h2 {
+                font-size: 1.1rem;
+            }
+            .toast {
+                font-size: 0.6rem;
+                padding: 8px 14px;
+                bottom: 16px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .header-btn {
+                padding: 0 6px;
+                font-size: 0.5rem;
+            }
+            .header-btn .us {
+                max-width: 30px;
+            }
+            .site-name {
+                font-size: 0.8rem;
+            }
+            .wip-badge {
+                font-size: 0.45rem;
+            }
+            .settings-dropdown {
+                padding: 10px 8px;
+            }
+            .sd-group {
+                margin-bottom: 10px;
+            }
+        }
+
+        /* ─── UTILITY ─── */
+        .hidden {
+            display: none !important;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .w-full {
+            width: 100%;
+        }
+        .gap-1 {
+            gap: 4px;
+        }
+        .flex {
+            display: flex;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .mt-1 {
+            margin-top: 6px;
+        }
+        .mb-1 {
+            margin-bottom: 6px;
+        }
+
+        /* ─── 33-UNDERSCORE CONSTANT ─── */
+        .uscore-33 {
+            display: block;
+            font-size: 0.45rem;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            opacity: 0.2;
+            font-weight: 300;
+            line-height: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        .uscore-33::before {
+            content: '_________________________________';
+            /* 33 underscores */
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
-  <div class="app">
+
+    <!-- ─── HEADER ─── -->
     <header>
-      <button class="icon-btn" id="sidebarBtn" type="button" aria-label="Toggle sidebar">
-        <div class="menu-lines"><span></span><span></span><span></span></div>
-      </button>
+        <div class="header-left">
+            <button class="menu-btn" id="menuBtn" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                <span></span><span></span><span></span>
+            </button>
+            <span class="site-name">Mer<span class="hl">Stor</span></span>
+            <span class="wip-badge">wip</span>
+        </div>
+        <div class="header-right">
+            <button class="header-btn" id="settingsBtn" onclick="toggleSettings()">
+                <span class="us">_________</span>
+                <span>set</span>
+            </button>
+        </div>
 
-      <div class="brand">
-        <span class="brand-title" id="brandTitle">MerStor</span>
-        <span class="badge">WIP</span>
-      </div>
+        <!-- SETTINGS DROPDOWN -->
+        <div class="settings-dropdown" id="settingsDropdown">
+            <div class="sd-title">
+                <span>settings</span>
+                <span class="us">____________________</span>
+            </div>
 
-      <div class="spacer"></div>
+            <!-- User -->
+            <div class="sd-group">
+                <div class="sd-avatar-row">
+                    <div class="sd-avatar">M</div>
+                    <div>
+                        <div class="sd-user">Myokyuu</div>
+                        <div class="sd-handle">@vyhuynh24092021-debug</div>
+                    </div>
+                </div>
+            </div>
 
-      <button class="icon-btn" id="settingsBtn" type="button" aria-label="Open settings">⚙</button>
+            <div class="sd-divider"></div>
+
+            <!-- 1. Dark mode -->
+            <div class="sd-group">
+                <div class="toggle-row">
+                    <span>dark mode</span>
+                    <button class="btn-underscore small" id="themeToggle" onclick="toggleTheme()">
+                        <span class="label">off</span>
+                        <span class="uscore">_________________________________</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. Sidebar visibility -->
+            <div class="sd-group">
+                <div class="toggle-row">
+                    <span>show sidebar</span>
+                    <button class="btn-underscore small toggle-on" id="sidebarToggle" onclick="toggleSidebarSetting()">
+                        <span class="label">on</span>
+                        <span class="uscore">_________________________________</span>
+                    </button>
+                </div>
+                <div class="sd-desc">hide or show the navigation sidebar</div>
+            </div>
+
+            <!-- 3. README header visibility -->
+            <div class="sd-group">
+                <div class="toggle-row">
+                    <span>show readme header</span>
+                    <button class="btn-underscore small toggle-on" id="readmeHeaderToggle" onclick="toggleReadmeHeader()">
+                        <span class="label">on</span>
+                        <span class="uscore">_________________________________</span>
+                    </button>
+                </div>
+                <div class="sd-desc">hide the title while keeping content</div>
+            </div>
+
+            <!-- 4. README custom name -->
+            <div class="sd-group">
+                <div class="sd-label">readme display name</div>
+                <input class="sd-input" id="readmeNameInput" type="text" placeholder="e.g. Overview, Docs, Home" value="README" />
+                <div class="sd-desc" style="margin-top:4px;">change what the header says</div>
+            </div>
+
+            <div class="sd-divider"></div>
+
+            <!-- 5. Font size -->
+            <div class="sd-group">
+                <div class="sd-label">content font size</div>
+                <div class="sd-range-wrap">
+                    <input class="sd-range" id="fontSizeRange" type="range" min="12" max="20" value="15" step="1" />
+                    <span class="sd-range-val" id="fontSizeVal">15</span>
+                </div>
+            </div>
+
+            <!-- 6. Compact mode -->
+            <div class="sd-group">
+                <div class="toggle-row">
+                    <span>compact mode</span>
+                    <button class="btn-underscore small toggle-off" id="compactToggle" onclick="toggleCompact()">
+                        <span class="label">off</span>
+                        <span class="uscore">_________________________________</span>
+                    </button>
+                </div>
+                <div class="sd-desc">reduce padding for a denser layout</div>
+            </div>
+
+            <div class="sd-divider"></div>
+
+            <!-- Footer -->
+            <div class="sd-footer">
+                <span class="ver">v1.2 · MerStor</span>
+                <button class="reset-btn" onclick="resetSettings()">reset all</button>
+            </div>
+        </div>
     </header>
 
-    <div class="layout" id="layout">
-      <div class="overlay" id="overlay"></div>
+    <!-- ─── TOAST ─── -->
+    <div class="toast" id="toast">
+        <span class="toast-us">_________________________________</span>
+        <span class="toast-msg"></span>
+    </div>
 
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-inner">
-          <div class="sidebar-section">
-            <div class="userbox">
-              <div class="avatar" id="avatarText">M</div>
-              <div class="user-meta">
-                <div class="user-name" id="userName">Loading...</div>
-                <div class="user-handle" id="userHandle">...</div>
-              </div>
+    <!-- ─── LAYOUT ─── -->
+    <div class="layout">
+        <!-- SIDEBAR -->
+        <div class="sidebar" id="sidebar">
+            <div id="navPanel">
+                <div class="nav-item active" id="nav-home" onclick="showReadme()">
+                    <span class="nav-us">_________</span>
+                    <span>readme</span>
+                </div>
+                <div class="sidebar-divider"></div>
+                <div id="navTree">
+                    <div class="loading" style="padding:14px">
+                        <div class="spin"></div>
+                        <span>loading...</span>
+                    </div>
+                </div>
             </div>
-            <div class="side-actions">
-              <button class="pill" id="homeBtn" type="button">Home</button>
-              <button class="pill" id="refreshBtn" type="button">Refresh</button>
-            </div>
-          </div>
-
-          <div class="nav-title">Explorer</div>
-          <div class="tree" id="treeRoot">
-            <div class="state" style="padding: 14px;">
-              <span class="spinner"></span> Loading repository...
-            </div>
-          </div>
         </div>
-      </aside>
 
-      <main class="main" id="main">
-        <div class="content-wrap">
-          <section class="view show" id="homeView">
-            <div class="hero">
-              <div class="hero-top">
-                <div class="hero-title" id="repoTitle">Loading...</div>
-                <span class="badge" id="repoVisibility">Public</span>
-              </div>
-              <div class="hero-sub" id="repoMeta">
-                Loading overview...
-              </div>
+        <!-- MAIN -->
+        <div class="main" id="mainContent">
+            <!-- README view -->
+            <div id="view-readme" class="readme-wrap">
+                <div class="readme-head" id="readmeHead">
+                    <span class="rh-us">_________</span>
+                    <span class="rh-name" id="readmeHeadName">README</span>
+                    <span class="rh-badge">.md</span>
+                </div>
+                <div class="readme-body" id="readmeBody">
+                    <div class="loading">
+                        <div class="spin"></div>
+                        <span>loading readme...</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="preview-wrap" style="margin-top:16px;">
-              <div class="preview-head">
-                <div class="preview-name">Overview source</div>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                  <a class="mini-btn" id="openSourceBtn" href="#" target="_blank" rel="noreferrer">Open raw</a>
+            <!-- Files view -->
+            <div id="view-src" style="display:none">
+                <div class="breadcrumb" id="breadcrumb"></div>
+                <div class="src-head">
+                    <h2 id="src-title">Files</h2>
+                    <span class="src-count" id="src-count"></span>
+                    <div class="src-search">
+                        <span class="srch-us">______</span>
+                        <input type="text" id="srcSearchInput" placeholder="search files" oninput="filterFiles()" />
+                    </div>
+                    <div class="src-sort">
+                        <button class="sort-btn active" data-sort="name" onclick="sortFiles('name')">name</button>
+                        <button class="sort-btn" data-sort="size" onclick="sortFiles('size')">size</button>
+                        <button class="sort-btn" data-sort="type" onclick="sortFiles('type')">type</button>
+                    </div>
+                </div>
+                <div class="src-grid" id="src-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ━━━ CONFIG ━━━
+        const CONFIG = {
+            owner: 'vyhuynh24092021-debug',
+            repo: 'MyokyuuSAVE',
+            get api() { return `https://api.github.com/repos/${this.owner}/${this.repo}`; },
+            readmeName: 'README',
+            showReadmeHeader: true,
+            showSidebar: true,
+            fontSize: 15,
+            compact: false,
+            theme: 'light',
+        };
+
+        // ━━━ STATE ━━━
+        let currentPath = '';
+        let currentLabel = '';
+        let allFiles = [];
+        let filteredFiles = [];
+        let currentSort = 'name';
+        let sortAsc = true;
+
+        // ━━━ DOM REFS ━━━
+        const $ = id => document.getElementById(id);
+        const sidebar = $('sidebar');
+        const menuBtn = $('menuBtn');
+        const settingsBtn = $('settingsBtn');
+        const settingsDropdown = $('settingsDropdown');
+        const themeToggle = $('themeToggle');
+        const sidebarToggle = $('sidebarToggle');
+        const readmeHeaderToggle = $('readmeHeaderToggle');
+        const readmeNameInput = $('readmeNameInput');
+        const readmeHead = $('readmeHead');
+        const readmeHeadName = $('readmeHeadName');
+        const fontSizeRange = $('fontSizeRange');
+        const fontSizeVal = $('fontSizeVal');
+        const compactToggle = $('compactToggle');
+        const mainContent = $('mainContent');
+        const viewReadme = $('view-readme');
+        const viewSrc = $('view-src');
+        const readmeBody = $('readmeBody');
+        const srcGrid = $('src-grid');
+        const srcTitle = $('src-title');
+        const srcCount = $('src-count');
+        const srcSearchInput = $('srcSearchInput');
+        const breadcrumb = $('breadcrumb');
+        const navTree = $('navTree');
+        const navHome = $('nav-home');
+        const toast = $('toast');
+        const toastMsg = toast.querySelector('.toast-msg');
+
+        let toastTimer = null;
+
+        // ━━━ TOAST ━━━
+        function showToast(msg) {
+            if (toastTimer) clearTimeout(toastTimer);
+            toastMsg.textContent = msg;
+            toast.classList.add('show');
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // ━━━ THEME ━━━
+        function toggleTheme() {
+            const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const newTheme = dark ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme === 'dark' ? 'dark' : '');
+            CONFIG.theme = newTheme;
+            localStorage.setItem('merstor-theme', newTheme);
+            updateToggleBtn(themeToggle, newTheme === 'dark');
+            showToast(newTheme === 'dark' ? 'dark mode on' : 'light mode on');
+        }
+        // Init theme
+        const savedTheme = localStorage.getItem('merstor-theme') || 'light';
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            CONFIG.theme = 'dark';
+            updateToggleBtn(themeToggle, true);
+        } else {
+            updateToggleBtn(themeToggle, false);
+        }
+
+        // ━━━ TOGGLE BUTTON HELPERS ━━━
+        function updateToggleBtn(btn, on) {
+            if (!btn) return;
+            const label = btn.querySelector('.label');
+            if (!label) return;
+            label.textContent = on ? 'on' : 'off';
+            btn.classList.toggle('toggle-on', on);
+            btn.classList.toggle('toggle-off', !on);
+        }
+
+        function getToggleState(btn) {
+            const label = btn?.querySelector('.label');
+            return label?.textContent === 'on';
+        }
+
+        // ━━━ SETTINGS UI ━━━
+        let settingsOpen = false;
+
+        function toggleSettings() {
+            settingsOpen = !settingsOpen;
+            settingsDropdown.classList.toggle('open', settingsOpen);
+            settingsBtn.classList.toggle('active', settingsOpen);
+        }
+        document.addEventListener('click', (e) => {
+            if (settingsOpen && !settingsDropdown.contains(e.target) && e.target !== settingsBtn && !settingsBtn
+                .contains(e.target)) {
+                settingsOpen = false;
+                settingsDropdown.classList.remove('open');
+                settingsBtn.classList.remove('active');
+            }
+        });
+
+        // ━━━ SIDEBAR ━━━
+        function toggleSidebar() {
+            const collapsed = sidebar.classList.toggle('collapsed');
+            CONFIG.showSidebar = !collapsed;
+            localStorage.setItem('merstor-sidebar', CONFIG.showSidebar ? '1' : '0');
+            updateToggleBtn(sidebarToggle, CONFIG.showSidebar);
+            menuBtn.classList.toggle('active', collapsed);
+            showToast(collapsed ? 'sidebar hidden' : 'sidebar shown');
+        }
+
+        function toggleSidebarSetting() {
+            const on = !getToggleState(sidebarToggle);
+            CONFIG.showSidebar = on;
+            sidebar.classList.toggle('collapsed', !on);
+            menuBtn.classList.toggle('active', !on);
+            updateToggleBtn(sidebarToggle, on);
+            localStorage.setItem('merstor-sidebar', on ? '1' : '0');
+            showToast(on ? 'sidebar shown' : 'sidebar hidden');
+        }
+        // Init sidebar
+        const savedSidebar = localStorage.getItem('merstor-sidebar');
+        if (savedSidebar === '0') {
+            sidebar.classList.add('collapsed');
+            menuBtn.classList.add('active');
+            CONFIG.showSidebar = false;
+            updateToggleBtn(sidebarToggle, false);
+        } else {
+            updateToggleBtn(sidebarToggle, true);
+        }
+
+        // ━━━ README HEADER ━━━
+        function toggleReadmeHeader() {
+            const on = !getToggleState(readmeHeaderToggle);
+            CONFIG.showReadmeHeader = on;
+            readmeHead.classList.toggle('hidden', !on);
+            updateToggleBtn(readmeHeaderToggle, on);
+            localStorage.setItem('merstor-readme-header', on ? '1' : '0');
+            showToast(on ? 'readme header shown' : 'readme header hidden');
+        }
+        const savedHeader = localStorage.getItem('merstor-readme-header');
+        if (savedHeader === '0') {
+            readmeHead.classList.add('hidden');
+            CONFIG.showReadmeHeader = false;
+            updateToggleBtn(readmeHeaderToggle, false);
+        } else {
+            updateToggleBtn(readmeHeaderToggle, true);
+        }
+
+        // ━━━ README NAME ━━━
+        readmeNameInput.addEventListener('input', function() {
+            const val = this.value.trim() || 'README';
+            CONFIG.readmeName = val;
+            readmeHeadName.textContent = val;
+            localStorage.setItem('merstor-readme-name', val);
+            const homeLabel = navHome;
+            const span = homeLabel.querySelector('span:last-child');
+            if (span) span.textContent = val.toLowerCase();
+        });
+        const savedName = localStorage.getItem('merstor-readme-name');
+        if (savedName) {
+            CONFIG.readmeName = savedName;
+            readmeNameInput.value = savedName;
+            readmeHeadName.textContent = savedName;
+            const homeLabel = navHome;
+            const span = homeLabel.querySelector('span:last-child');
+            if (span) span.textContent = savedName.toLowerCase();
+        }
+
+        // ━━━ FONT SIZE ━━━
+        fontSizeRange.addEventListener('input', function() {
+            const val = this.value;
+            fontSizeVal.textContent = val;
+            CONFIG.fontSize = parseInt(val);
+            document.documentElement.style.setProperty('--readme-size', val + 'px');
+            localStorage.setItem('merstor-font-size', val);
+        });
+        const savedFont = localStorage.getItem('merstor-font-size');
+        if (savedFont) {
+            const val = parseInt(savedFont);
+            if (val >= 12 && val <= 20) {
+                fontSizeRange.value = val;
+                fontSizeVal.textContent = val;
+                CONFIG.fontSize = val;
+                document.documentElement.style.setProperty('--readme-size', val + 'px');
+            }
+        }
+
+        // ━━━ COMPACT MODE ━━━
+        function toggleCompact() {
+            const on = !getToggleState(compactToggle);
+            CONFIG.compact = on;
+            mainContent.classList.toggle('compact', on);
+            updateToggleBtn(compactToggle, on);
+            localStorage.setItem('merstor-compact', on ? '1' : '0');
+            showToast(on ? 'compact mode on' : 'compact mode off');
+        }
+        const savedCompact = localStorage.getItem('merstor-compact');
+        if (savedCompact === '1') {
+            mainContent.classList.add('compact');
+            CONFIG.compact = true;
+            updateToggleBtn(compactToggle, true);
+        } else {
+            updateToggleBtn(compactToggle, false);
+        }
+
+        // ━━━ RESET ━━━
+        function resetSettings() {
+            // Theme: light
+            document.documentElement.setAttribute('data-theme', '');
+            CONFIG.theme = 'light';
+            localStorage.setItem('merstor-theme', 'light');
+            updateToggleBtn(themeToggle, false);
+
+            // Sidebar: show
+            sidebar.classList.remove('collapsed');
+            menuBtn.classList.remove('active');
+            CONFIG.showSidebar = true;
+            localStorage.setItem('merstor-sidebar', '1');
+            updateToggleBtn(sidebarToggle, true);
+
+            // README header: show
+            readmeHead.classList.remove('hidden');
+            CONFIG.showReadmeHeader = true;
+            localStorage.setItem('merstor-readme-header', '1');
+            updateToggleBtn(readmeHeaderToggle, true);
+
+            // README name: default
+            readmeNameInput.value = 'README';
+            CONFIG.readmeName = 'README';
+            readmeHeadName.textContent = 'README';
+            localStorage.setItem('merstor-readme-name', 'README');
+            const homeLabel = navHome;
+            const span = homeLabel.querySelector('span:last-child');
+            if (span) span.textContent = 'readme';
+
+            // Font size: 15
+            fontSizeRange.value = 15;
+            fontSizeVal.textContent = '15';
+            CONFIG.fontSize = 15;
+            document.documentElement.style.setProperty('--readme-size', '15px');
+            localStorage.setItem('merstor-font-size', '15');
+
+            // Compact: off
+            mainContent.classList.remove('compact');
+            CONFIG.compact = false;
+            localStorage.setItem('merstor-compact', '0');
+            updateToggleBtn(compactToggle, false);
+
+            // Close settings
+            settingsOpen = false;
+            settingsDropdown.classList.remove('open');
+            settingsBtn.classList.remove('active');
+
+            // Re-render files if visible
+            if (viewSrc.style.display !== 'none') {
+                renderFiles(filteredFiles.length ? filteredFiles : allFiles);
+            }
+            showToast('all settings reset');
+        }
+
+        // ━━━ README ━━━
+        async function showReadme() {
+            closeSettings();
+            viewReadme.style.display = '';
+            viewSrc.style.display = 'none';
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            navHome.classList.add('active');
+
+            try {
+                const res = await fetch(`${CONFIG.api}/readme`, {
+                    headers: { Accept: 'application/vnd.github.raw' }
+                });
+                const text = await res.text();
+                const html = marked.parse(text);
+                readmeBody.innerHTML = html;
+            } catch {
+                readmeBody.innerHTML = '<p style="color:var(--text-muted);letter-spacing:0.04em;">could not load readme</p>';
+            }
+        }
+
+        // ━━━ FILES ━━━
+        async function loadFolder(path, label, navEl) {
+            closeSettings();
+            viewReadme.style.display = 'none';
+            viewSrc.style.display = '';
+            srcTitle.textContent = label;
+            currentPath = path;
+            currentLabel = label;
+
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if (navEl) navEl.classList.add('active');
+
+            srcGrid.innerHTML = '<div class="loading"><div class="spin"></div><span>loading files...</span></div>';
+            srcCount.textContent = '';
+            srcSearchInput.value = '';
+
+            try {
+                const res = await fetch(`${CONFIG.api}/contents/${path}`);
+                if (!res.ok) throw new Error();
+                const items = await res.json();
+                const files = items.filter(f => f.type === 'file');
+                allFiles = files;
+                filteredFiles = [...files];
+                currentSort = 'name';
+                sortAsc = true;
+                document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('.sort-btn[data-sort="name"]')?.classList.add('active');
+
+                renderFiles(files);
+                updateBreadcrumb(path, label);
+            } catch {
+                srcGrid.innerHTML = '<div class="src-empty">could not load files</div>';
+                srcCount.textContent = '';
+            }
+        }
+
+        function renderFiles(files) {
+            const sizeStr = b => b < 1024 ? b + ' B' :
+                b < 1048576 ? (b / 1024).toFixed(1) + ' KB' :
+                (b / 1048576).toFixed(1) + ' MB';
+
+            if (!files.length) {
+                srcGrid.innerHTML = '<div class="src-empty">no files here</div>';
+                srcCount.textContent = '0 files';
+                return;
+            }
+
+            srcCount.textContent = files.length + ' file' + (files.length !== 1 ? 's' : '');
+
+            srcGrid.innerHTML = files.map(f => {
+                const ext = f.name.includes('.') ? f.name.split('.').pop().toLowerCase() : 'file';
+                return `
+              <div class="src-card" data-filename="${f.name}" data-size="${f.size}" data-ext="${ext}">
+                <div class="card-name">
+                  <span class="card-us">_________</span>
+                  ${f.name}
+                </div>
+                <div class="card-size">${sizeStr(f.size)}</div>
+                <div class="card-foot">
+                  <span class="file-tag">.${ext}</span>
+                  <a class="dl-btn" href="${f.download_url}" download="${f.name}" target="_blank">download</a>
                 </div>
               </div>
-              <div class="preview-body" id="readmeBody">
-                <div class="state"><span class="spinner"></span> Loading...</div>
-              </div>
-            </div>
-          </section>
-
-          <section class="view" id="folderView">
-            <div class="section-head">
-              <h2 id="folderTitle">Files</h2>
-              <span class="count" id="folderCount">0 files</span>
-            </div>
-
-            <div class="crumbs" id="crumbs"></div>
-
-            <div class="grid" id="fileGrid"></div>
-
-            <div class="preview-wrap hidden" id="filePreviewWrap" style="margin-top:16px;">
-              <div class="preview-head">
-                <div class="preview-name" id="filePreviewName">File preview</div>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                  <a class="mini-btn primary" id="downloadBtn" href="#" target="_blank" rel="noreferrer">Download</a>
-                  <button class="mini-btn" id="closePreviewBtn" type="button">Close preview</button>
-                </div>
-              </div>
-              <div class="preview-body" id="filePreviewBody"></div>
-            </div>
-          </section>
-        </div>
-      </main>
-    </div>
-  </div>
-
-  <div class="settings-modal" id="settingsModal" aria-hidden="true">
-    <div class="settings-backdrop" id="settingsBackdrop"></div>
-    <div class="settings-sheet" role="dialog" aria-modal="true" aria-label="Settings">
-      <div class="settings-title">Settings</div>
-
-      <div class="settings-row">
-        <div class="settings-text">
-          <div class="settings-label">Dark mode</div>
-          <div class="settings-desc">Switch theme instantly.</div>
-        </div>
-        <div class="toggle" id="themeToggle" role="switch" aria-checked="false" tabindex="0"></div>
-      </div>
-
-      <div class="settings-row">
-        <div class="settings-text">
-          <div class="settings-label">Repository</div>
-          <div class="settings-desc" id="settingRepo">Loading...</div>
-        </div>
-      </div>
-
-      <div class="settings-row">
-        <div class="settings-text">
-          <div class="settings-label">Visibility</div>
-          <div class="settings-desc" id="settingVisibility">...</div>
-        </div>
-      </div>
-
-      <div class="settings-row">
-        <div class="settings-text">
-          <div class="settings-label">Branch</div>
-          <div class="settings-desc" id="settingBranch">main</div>
-        </div>
-      </div>
-
-      <div class="settings-row">
-        <button class="pill" id="closeSettingsBtn" type="button">Close</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const OWNER = 'vyhuynh24092021-debug';
-    const REPO  = 'MyokyuuSAVE';
-    const API   = `https://api.github.com/repos/${OWNER}/${REPO}`;
-
-    const $ = (id) => document.getElementById(id);
-
-    const state = {
-      theme: localStorage.getItem('theme') || 'light',
-      sidebarOpen: false,
-      activeView: 'home',
-      currentFolderPath: '',
-      currentFolderLabel: '',
-      currentFile: null,
-      rootItems: [],
-      repoInfo: null,
-      dirCache: new Map(),
-      fileCache: new Map(),
-    };
-
-    const isReadmeLike = (name = '') => /^readme(\.[a-z0-9]+)?$/i.test(String(name).trim());
-    const isTextPreviewable = (name = '') => {
-      const ext = fileExt(name);
-      return [
-        'txt','md','json','js','ts','jsx','tsx','html','htm','css','scss','less',
-        'py','java','kt','kts','c','cpp','h','hpp','go','rs','rb','php','lua',
-        'sh','bat','ps1','yml','yaml','xml','ini','cfg','conf','toml','csv',
-        'sql','log','dart','swift','mjs','cjs','vue','svelte','gradle','properties',
-        'diff','patch'
-      ].includes(ext);
-    };
-
-    const isImagePreviewable = (name = '') => {
-      const ext = fileExt(name);
-      return ['png','jpg','jpeg','gif','webp','bmp','svg','avif'].includes(ext);
-    };
-
-    function fileExt(name = '') {
-      const i = String(name).lastIndexOf('.');
-      return i >= 0 ? String(name).slice(i + 1).toLowerCase() : '';
-    }
-
-    function sizeStr(n) {
-      if (typeof n !== 'number') return '';
-      if (n < 1024) return `${n} B`;
-      if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-      return `${(n / 1024 / 1024).toFixed(1)} MB`;
-    }
-
-    function escapeHtml(s) {
-      return String(s)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
-    }
-
-    function setTheme(theme) {
-      state.theme = theme === 'dark' ? 'dark' : 'light';
-      if (state.theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-      else document.documentElement.removeAttribute('data-theme');
-
-      localStorage.setItem('theme', state.theme);
-      $('themeToggle').classList.toggle('on', state.theme === 'dark');
-      $('themeToggle').setAttribute('aria-checked', state.theme === 'dark' ? 'true' : 'false');
-    }
-
-    function toggleTheme() {
-      setTheme(state.theme === 'dark' ? 'light' : 'dark');
-    }
-
-    function openSettings() {
-      $('settingsModal').classList.add('open');
-      $('settingsModal').setAttribute('aria-hidden', 'false');
-    }
-
-    function closeSettings() {
-      $('settingsModal').classList.remove('open');
-      $('settingsModal').setAttribute('aria-hidden', 'true');
-    }
-
-    function openSidebar() {
-      state.sidebarOpen = true;
-      $('sidebar').classList.add('open');
-      $('overlay').classList.add('show');
-    }
-
-    function closeSidebar() {
-      state.sidebarOpen = false;
-      $('sidebar').classList.remove('open');
-      $('overlay').classList.remove('show');
-    }
-
-    function toggleSidebar() {
-      state.sidebarOpen ? closeSidebar() : openSidebar();
-    }
-
-    function closeSidebarOnMobile() {
-      if (window.innerWidth <= 980) closeSidebar();
-    }
-
-    async function fetchJson(url) {
-      const res = await fetch(url, {
-        headers: { Accept: 'application/vnd.github+json' }
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return await res.json();
-    }
-
-    async function fetchContents(path = '') {
-      const key = path || '__root__';
-      if (state.dirCache.has(key)) return state.dirCache.get(key);
-
-      const url = path ? `${API}/contents/${path}` : `${API}/contents`;
-      const data = await fetchJson(url);
-
-      const list = Array.isArray(data) ? data : [];
-      const filtered = list
-        .filter(item => item.type === 'dir' || item.type === 'file')
-        .filter(item => !isReadmeLike(item.name))
-        .sort((a, b) => {
-          if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
-          return a.name.localeCompare(b.name);
-        });
-
-      state.dirCache.set(key, filtered);
-      return filtered;
-    }
-
-    function setActiveTreeHome() {
-      document.querySelectorAll('.tree-home').forEach(el => el.classList.remove('active'));
-      const home = $('homeTreeItem');
-      if (home) home.classList.add('active');
-      document.querySelectorAll('.tree-select').forEach(el => el.classList.remove('active'));
-    }
-
-    function setActiveTreePath(path) {
-      document.querySelectorAll('.tree-home').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tree-select').forEach(el => {
-        if (el.dataset.path === path) el.classList.add('active');
-        else el.classList.remove('active');
-      });
-    }
-
-    function showHome() {
-      state.activeView = 'home';
-      $('homeView').classList.add('show');
-      $('folderView').classList.remove('show');
-      setActiveTreeHome();
-      closeSidebarOnMobile();
-    }
-
-    function showFolder() {
-      state.activeView = 'folder';
-      $('homeView').classList.remove('show');
-      $('folderView').classList.add('show');
-    }
-
-    function buildBreadcrumb(path) {
-      const parts = path ? path.split('/').filter(Boolean) : [];
-      const crumbs = [];
-
-      crumbs.push(`<button class="crumb ${parts.length === 0 ? 'active' : ''}" data-crumb="">Home</button>`);
-
-      let acc = '';
-      parts.forEach((part, index) => {
-        acc = acc ? `${acc}/${part}` : part;
-        const active = index === parts.length - 1;
-        crumbs.push(`<span>›</span>`);
-        crumbs.push(`<button class="crumb ${active ? 'active' : ''}" data-crumb="${escapeHtml(acc)}">${escapeHtml(part)}</button>`);
-      });
-
-      $('crumbs').innerHTML = crumbs.join('');
-      $('crumbs').querySelectorAll('[data-crumb]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const path = btn.dataset.crumb || '';
-          if (!path) {
-            showHome();
-            return;
-          }
-          loadFolderView(path, path.split('/').pop());
-        });
-      });
-    }
-
-    function renderFileGrid(items) {
-      if (!items.length) {
-        $('fileGrid').innerHTML = '<div class="state">No visible files here.</div>';
-        return;
-      }
-
-      $('fileGrid').innerHTML = items.map(file => {
-        const ext = fileExt(file.name) || 'file';
-        return `
-          <article class="card">
-            <div class="card-name">${escapeHtml(file.name)}</div>
-            <div class="card-meta">
-              <span>${sizeStr(file.size)}</span>
-              <span class="tag">.${escapeHtml(ext)}</span>
-            </div>
-            <div class="card-foot">
-              <button class="mini-btn primary" type="button" data-preview="${escapeHtml(file.path)}" data-download="${escapeHtml(file.download_url)}" data-name="${escapeHtml(file.name)}">Preview</button>
-              <a class="mini-btn" href="${escapeHtml(file.download_url)}" download="${escapeHtml(file.name)}" target="_blank" rel="noreferrer">Download</a>
-            </div>
-          </article>
-        `;
-      }).join('');
-
-      $('fileGrid').querySelectorAll('[data-preview]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          openFilePreview({
-            path: btn.dataset.preview,
-            download_url: btn.dataset.download,
-            name: btn.dataset.name
-          });
-        });
-      });
-    }
-
-    async function loadFolderView(path = '', label = 'Files') {
-      showFolder();
-      state.currentFolderPath = path;
-      state.currentFolderLabel = label;
-      state.currentFile = null;
-
-      $('folderTitle').textContent = label || 'Files';
-      $('folderCount').textContent = 'Loading...';
-      $('fileGrid').innerHTML = '<div class="state"><span class="spinner"></span> Loading files...</div>';
-      $('filePreviewWrap').classList.add('hidden');
-      $('filePreviewBody').innerHTML = '';
-
-      setActiveTreePath(path);
-      buildBreadcrumb(path);
-
-      try {
-        const items = await fetchContents(path);
-        const files = items.filter(item => item.type === 'file');
-
-        $('folderCount').textContent = `${files.length} file${files.length === 1 ? '' : 's'}`;
-        renderFileGrid(files);
-      } catch {
-        $('folderCount').textContent = '0 files';
-        $('fileGrid').innerHTML = '<div class="state">Could not load files.</div>';
-      }
-
-      closeSidebarOnMobile();
-    }
-
-    async function openFilePreview(file) {
-      state.currentFile = file;
-      $('filePreviewWrap').classList.remove('hidden');
-      $('filePreviewName').textContent = file.path;
-      $('downloadBtn').href = file.download_url;
-      $('filePreviewBody').innerHTML = '<div class="state"><span class="spinner"></span> Loading preview...</div>';
-
-      try {
-        if (isImagePreviewable(file.name)) {
-          $('filePreviewBody').innerHTML = `<img src="${escapeHtml(file.download_url)}" alt="${escapeHtml(file.name)}" style="max-width:100%;border-radius:12px;display:block;">`;
-          $('filePreviewWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          return;
+            `;
+            }).join('');
         }
 
-        if (!isTextPreviewable(file.name) || file.size > 1024 * 1024 * 2) {
-          $('filePreviewBody').innerHTML = `
-            <div class="state">
-              File preview is unavailable for this type or file size.
-              <br><br>
-              Use Download to open it directly.
-            </div>
-          `;
-          $('filePreviewWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
-          return;
-        }
-
-        const res = await fetch(file.download_url);
-        const text = await res.text();
-
-        if (fileExt(file.name) === 'md') {
-          $('filePreviewBody').innerHTML = `<div class="preview-md">${marked.parse(text)}</div>`;
-        } else {
-          $('filePreviewBody').innerHTML = `<pre class="preview-text"></pre>`;
-          $('filePreviewBody .preview-text').textContent = text;
-        }
-
-        $('filePreviewWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } catch {
-        $('filePreviewBody').innerHTML = '<div class="state">Could not load preview.</div>';
-      }
-    }
-
-    function closeFilePreview() {
-      $('filePreviewWrap').classList.add('hidden');
-      $('filePreviewBody').innerHTML = '';
-      state.currentFile = null;
-    }
-
-    async function loadHome() {
-      showHome();
-
-      try {
-        const [repoInfo, readmeRes] = await Promise.all([
-          fetchJson(API),
-          fetch(`${API}/readme`, { headers: { Accept: 'application/vnd.github.raw' } })
-        ]);
-
-        state.repoInfo = repoInfo;
-
-        $('brandTitle').textContent = repoInfo.name || REPO;
-        $('repoTitle').textContent = repoInfo.name || REPO;
-        $('repoVisibility').textContent = repoInfo.private ? 'Private' : 'Public';
-        $('settingVisibility').textContent = repoInfo.private ? 'Private' : 'Public';
-        $('settingRepo').textContent = `${repoInfo.full_name || `${OWNER}/${REPO}`}`;
-        $('settingBranch').textContent = repoInfo.default_branch || 'main';
-        $('userName').textContent = repoInfo.name || REPO;
-        $('userHandle').textContent = `@${OWNER}`;
-        $('avatarText').textContent = (repoInfo.name || REPO).charAt(0).toUpperCase();
-
-        const desc = repoInfo.description || 'Overview from repository source.';
-        $('repoMeta').textContent = desc;
-
-        const readmeText = await readmeRes.text();
-        $('readmeBody').innerHTML = marked.parse(readmeText);
-        $('openSourceBtn').href = `${API}/readme`;
-      } catch {
-        $('repoTitle').textContent = REPO;
-        $('repoMeta').textContent = 'Could not load overview source.';
-        $('readmeBody').innerHTML = '<div class="state">Could not load overview.</div>';
-        $('settingRepo').textContent = `${OWNER}/${REPO}`;
-        $('settingVisibility').textContent = 'Unknown';
-        $('openSourceBtn').href = '#';
-      }
-    }
-
-    function createTreeItem(item, depth = 0) {
-      if (item.type === 'file') {
-        return `
-          <div class="tree-node" style="--depth:${depth}">
-            <div class="tree-row">
-              <button class="tree-select file-select" type="button"
-                data-action="file"
-                data-path="${escapeHtml(item.path)}"
-                data-download="${escapeHtml(item.download_url)}"
-                data-name="${escapeHtml(item.name)}">
-                📄 <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(item.name)}</span>
-              </button>
-            </div>
-          </div>
-        `;
-      }
-
-      const hasChildren = true;
-      return `
-        <div class="tree-node dir" data-path="${escapeHtml(item.path)}" data-loaded="0" data-depth="${depth}" style="--depth:${depth}">
-          <div class="tree-row">
-            <button class="tree-expander" type="button" data-action="toggle" aria-label="Toggle folder" ${hasChildren ? '' : 'disabled'}>▶</button>
-            <button class="tree-select dir-select" type="button" data-action="open-dir" data-path="${escapeHtml(item.path)}" data-name="${escapeHtml(item.name)}">
-              📁 <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(item.name)}</span>
-            </button>
-          </div>
-          <div class="tree-children">
-            <div class="children-inner"></div>
-          </div>
-        </div>
-      `;
-    }
-
-    async function loadTreeChildren(dirNode) {
-      const path = dirNode.dataset.path || '';
-      const loaded = dirNode.dataset.loaded === '1';
-      if (loaded) return;
-
-      const inner = dirNode.querySelector('.children-inner');
-      inner.innerHTML = '<div class="state" style="padding:8px 14px;"><span class="spinner"></span> Loading...</div>';
-
-      try {
-        const items = await fetchContents(path);
-        const html = items.map(item => createTreeItem(item, Number(dirNode.dataset.depth || 0) + 1)).join('');
-        inner.innerHTML = html || '<div class="state" style="padding:8px 14px;">Empty</div>';
-        dirNode.dataset.loaded = '1';
-
-        inner.querySelectorAll('.dir-select').forEach(btn => {
-          btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const p = btn.dataset.path;
-            const n = btn.dataset.name;
-            loadFolderView(p, n);
-          });
-        });
-
-        inner.querySelectorAll('.tree-expander').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const node = btn.closest('.tree-node.dir');
-            node.classList.toggle('open');
-            if (node.classList.contains('open')) await loadTreeChildren(node);
-          });
-        });
-
-        inner.querySelectorAll('.file-select').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            openFilePreview({
-              path: btn.dataset.path,
-              download_url: btn.dataset.download,
-              name: btn.dataset.name
+        // ━━━ BREADCRUMB ━━━
+        function updateBreadcrumb(path, label) {
+            const parts = path.split('/').filter(Boolean);
+            let html = `<span class="bc-us">_________</span> `;
+            html += `<span class="crumb" onclick="showReadme()">root</span>`;
+            let cumulative = '';
+            parts.forEach((p, i) => {
+                cumulative += (cumulative ? '/' : '') + p;
+                const isLast = i === parts.length - 1;
+                html += `<span class="sep"> / </span>`;
+                if (isLast) {
+                    html += `<span class="current">${label}</span>`;
+                } else {
+                    html += `<span class="crumb" onclick="loadFolder('${cumulative}','${p}',null)">${p}</span>`;
+                }
             });
-            closeSidebarOnMobile();
-          });
-        });
-      } catch {
-        inner.innerHTML = '<div class="state" style="padding:8px 14px;">Could not load folder.</div>';
-      }
-    }
-
-    async function buildSidebar() {
-      try {
-        const root = await fetchContents('');
-        state.rootItems = root;
-
-        const rootFiles = root.filter(item => item.type === 'file');
-        const rootDirs = root.filter(item => item.type === 'dir');
-
-        let html = `
-          <div class="tree-home active" id="homeTreeItem" role="button" tabindex="0">🏠 Home</div>
-        `;
-
-        if (rootDirs.length || rootFiles.length) {
-          html += `<div class="nav-title">Root</div>`;
-          html += `<div class="tree" id="rootTree">`;
-
-          rootDirs.forEach(dir => {
-            html += createTreeItem(dir, 0);
-          });
-
-          rootFiles.forEach(file => {
-            html += createTreeItem(file, 0);
-          });
-
-          html += `</div>`;
-        } else {
-          html += `<div class="state" style="padding:14px;">No visible items.</div>`;
+            breadcrumb.innerHTML = html;
         }
 
-        $('treeRoot').innerHTML = html;
-
-        $('homeTreeItem').addEventListener('click', () => {
-          setActiveTreeHome();
-          loadHome();
-        });
-
-        $('homeTreeItem').addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setActiveTreeHome();
-            loadHome();
-          }
-        });
-
-        document.querySelectorAll('#treeRoot .dir-select').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const p = btn.dataset.path;
-            const n = btn.dataset.name;
-            loadFolderView(p, n);
-          });
-        });
-
-        document.querySelectorAll('#treeRoot .file-select').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            openFilePreview({
-              path: btn.dataset.path,
-              download_url: btn.dataset.download,
-              name: btn.dataset.name
-            });
-            closeSidebarOnMobile();
-          });
-        });
-
-        document.querySelectorAll('#treeRoot .tree-expander').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const node = btn.closest('.tree-node.dir');
-            node.classList.toggle('open');
-            if (node.classList.contains('open')) await loadTreeChildren(node);
-          });
-        });
-      } catch {
-        $('treeRoot').innerHTML = '<div class="state" style="padding:14px;">Could not load repository.</div>';
-      }
-    }
-
-    function bindGlobalUI() {
-      $('sidebarBtn').addEventListener('click', toggleSidebar);
-      $('overlay').addEventListener('click', closeSidebar);
-      $('settingsBtn').addEventListener('click', openSettings);
-      $('settingsBackdrop').addEventListener('click', closeSettings);
-      $('closeSettingsBtn').addEventListener('click', closeSettings);
-      $('themeToggle').addEventListener('click', toggleTheme);
-      $('themeToggle').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          toggleTheme();
+        // ━━━ SEARCH ━━━
+        function filterFiles() {
+            const q = srcSearchInput.value.toLowerCase().trim();
+            if (!q) {
+                filteredFiles = [...allFiles];
+            } else {
+                filteredFiles = allFiles.filter(f => f.name.toLowerCase().includes(q));
+            }
+            applySort();
         }
-      });
-      $('homeBtn').addEventListener('click', () => {
-        setActiveTreeHome();
-        loadHome();
-      });
-      $('refreshBtn').addEventListener('click', async () => {
-        state.dirCache.clear();
-        state.fileCache.clear();
-        location.reload();
-      });
-      $('closePreviewBtn').addEventListener('click', closeFilePreview);
 
-      window.addEventListener('resize', () => {
-        if (window.innerWidth > 980) closeSidebar();
-      });
-    }
+        // ━━━ SORT ━━━
+        function sortFiles(type) {
+            if (currentSort === type) {
+                sortAsc = !sortAsc;
+            } else {
+                currentSort = type;
+                sortAsc = true;
+            }
+            document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.sort-btn[data-sort="${type}"]`)?.classList.add('active');
+            applySort();
+        }
 
-    async function init() {
-      bindGlobalUI();
-      setTheme(state.theme);
-      $('brandTitle').textContent = REPO;
-      $('repoTitle').textContent = REPO;
-      $('userName').textContent = REPO;
-      $('userHandle').textContent = `@${OWNER}`;
-      $('avatarText').textContent = REPO.charAt(0).toUpperCase();
-      $('settingRepo').textContent = `${OWNER}/${REPO}`;
-      $('settingBranch').textContent = 'main';
-      $('settingVisibility').textContent = 'Loading...';
+        function applySort() {
+            const files = filteredFiles.length ? filteredFiles : allFiles;
+            const sorted = [...files];
+            const extMap = f => f.name.includes('.') ? f.name.split('.').pop().toLowerCase() : '';
 
-      await Promise.all([
-        buildSidebar(),
-        loadHome()
-      ]);
+            switch (currentSort) {
+                case 'name':
+                    sorted.sort((a, b) => sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
+                    break;
+                case 'size':
+                    sorted.sort((a, b) => sortAsc ? a.size - b.size : b.size - a.size);
+                    break;
+                case 'type':
+                    sorted.sort((a, b) => {
+                        const ea = extMap(a),
+                            eb = extMap(b);
+                        return sortAsc ? ea.localeCompare(eb) : eb.localeCompare(ea);
+                    });
+                    break;
+                default:
+                    break;
+            }
+            filteredFiles = sorted;
+            renderFiles(sorted);
+        }
 
-      try {
-        const repoInfo = await fetchJson(API);
-        $('repoVisibility').textContent = repoInfo.private ? 'Private' : 'Public';
-        $('settingVisibility').textContent = repoInfo.private ? 'Private' : 'Public';
-        $('settingRepo').textContent = repoInfo.full_name || `${OWNER}/${REPO}`;
-        $('settingBranch').textContent = repoInfo.default_branch || 'main';
-        $('repoMeta').textContent = repoInfo.description || 'Overview from repository source.';
-      } catch {
-        $('settingVisibility').textContent = 'Unknown';
-      }
-    }
+        // ━━━ BUILD NAV ━━━
+        async function buildNav() {
+            try {
+                const res = await fetch(`${CONFIG.api}/contents`);
+                const root = await res.json();
+                const folders = root.filter(f => f.type === 'dir' && f.name !== '.github');
 
-    init();
-  </script>
+                if (!folders.length) {
+                    navTree.innerHTML = '<div class="src-empty" style="padding:14px;">no folders found</div>';
+                    return;
+                }
+
+                let html = '';
+                for (const folder of folders) {
+                    const catId = 'cat-' + folder.name.replace(/[^a-zA-Z0-9]/g, '_');
+                    const subId = 'sub-' + folder.name.replace(/[^a-zA-Z0-9]/g, '_');
+
+                    try {
+                        const subRes = await fetch(`${CONFIG.api}/contents/${folder.name}`);
+                        const subItems = await subRes.json();
+                        const subFolders = subItems.filter(f => f.type === 'dir');
+                        const files = subItems.filter(f => f.type === 'file');
+
+                        html += `<div class="cat-header" id="${catId}" onclick="toggleCat('${catId}','${subId}')">
+                      ${folder.name.toUpperCase()} <span class="cat-chev">▸</span>
+                    </div>`;
+                        html += `<div class="cat-sub" id="${subId}">`;
+
+                        if (subFolders.length > 0) {
+                            subFolders.forEach(sf => {
+                                const safe = sf.name.replace(/'/g, "\\'");
+                                html +=
+                                    `<div class="nav-item" onclick="loadFolder('${folder.name}/${sf.name}','${sf.name}',this)">${sf.name}</div>`;
+                            });
+                        } else if (files.length > 0) {
+                            html +=
+                                `<div class="nav-item" onclick="loadFolder('${folder.name}','${folder.name}',this)">${folder.name}</div>`;
+                        } else {
+                            html +=
+                                `<div class="nav-item" style="color:var(--text-muted);cursor:default;">empty</div>`;
+                        }
+                        html += `</div>`;
+                        html += `<div class="sidebar-divider"></div>`;
+                    } catch {
+                        // skip
+                    }
+                }
+                navTree.innerHTML = html || '<div class="src-empty" style="padding:14px;">no folders accessible</div>';
+            } catch {
+                navTree.innerHTML = '<div class="src-empty" style="padding:14px;">could not load repository</div>';
+            }
+        }
+
+        function toggleCat(catId, subId) {
+            document.getElementById(catId)?.classList.toggle('open');
+            document.getElementById(subId)?.classList.toggle('open');
+        }
+
+        function closeSettings() {
+            settingsOpen = false;
+            settingsDropdown.classList.remove('open');
+            settingsBtn.classList.remove('active');
+        }
+
+        // ━━━ INIT ━━━
+        showReadme();
+        buildNav();
+
+        // Close settings on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && settingsOpen) {
+                settingsOpen = false;
+                settingsDropdown.classList.remove('open');
+                settingsBtn.classList.remove('active');
+            }
+        });
+
+        console.log('MerStor loaded — custom UI with underscore buttons, no icons.');
+    </script>
 </body>
   </html>
