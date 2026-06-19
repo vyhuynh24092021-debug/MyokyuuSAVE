@@ -7,6 +7,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root{
       --bg:#ffffff;
       --panel:#f6f8fa;
@@ -15,14 +16,16 @@
       --text:#1f2328;
       --muted:#656d76;
       --accent:#0969da;
-      --accent-2:#dbeafe;
+      --accent-soft:#dbeafe;
       --hover:#eaf1fb;
       --badge-bg:#ddf4ff;
       --badge-text:#0550ae;
       --shadow:0 10px 30px rgba(0,0,0,.08);
       --header-h:56px;
-      --sidebar-w:280px;
+      --sidebar-w:290px;
+      --content-max:1200px;
     }
+
     [data-theme="dark"]{
       --bg:#0d1117;
       --panel:#161b22;
@@ -31,7 +34,7 @@
       --text:#e6edf3;
       --muted:#8b949e;
       --accent:#58a6ff;
-      --accent-2:#1c2d3e;
+      --accent-soft:#1c2d3e;
       --hover:#1c2433;
       --badge-bg:#1c2d3e;
       --badge-text:#58a6ff;
@@ -46,6 +49,9 @@
       overflow: hidden;
       overscroll-behavior: none;
     }
+
+    button, a { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
 
     .app{
       height: 100vh;
@@ -63,11 +69,12 @@
       padding: 0 14px;
       border-bottom: 1px solid var(--border);
       background: var(--panel);
-      z-index: 20;
+      z-index: 40;
     }
 
-    .menu-btn{
-      width: 38px; height: 38px;
+    .icon-btn{
+      width: 38px;
+      height: 38px;
       border: 1px solid var(--border);
       border-radius: 10px;
       background: var(--bg);
@@ -76,8 +83,11 @@
       cursor:pointer;
       flex: 0 0 auto;
       box-shadow: var(--shadow);
+      color: var(--text);
       touch-action: manipulation;
+      user-select: none;
     }
+
     .menu-lines{
       width: 16px;
       display: grid;
@@ -98,12 +108,13 @@
     }
     .brand-title{
       font-size: 15px;
-      font-weight: 700;
+      font-weight: 800;
       white-space: nowrap;
     }
+
     .badge{
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       padding: 3px 8px;
       border-radius: 999px;
       background: var(--badge-bg);
@@ -112,20 +123,6 @@
     }
 
     .spacer{ flex:1; }
-
-    .icon-btn{
-      width: 38px; height: 38px;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: var(--bg);
-      cursor:pointer;
-      display:grid;
-      place-items:center;
-      box-shadow: var(--shadow);
-      touch-action: manipulation;
-      color: var(--text);
-      font-size: 16px;
-    }
 
     .layout{
       flex: 1;
@@ -141,8 +138,8 @@
       background: rgba(0,0,0,.35);
       opacity: 0;
       pointer-events: none;
-      transition: .2s ease;
-      z-index: 25;
+      transition: opacity .2s ease;
+      z-index: 35;
     }
     .overlay.show{
       opacity: 1;
@@ -159,12 +156,12 @@
       min-height: 0;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
-      transition: transform .22s ease, width .22s ease, flex-basis .22s ease;
-      z-index: 30;
+      transition: width .22s ease, flex-basis .22s ease, transform .22s ease;
+      z-index: 36;
     }
 
     .sidebar-inner{
-      padding: 10px 0 14px;
+      padding-bottom: 12px;
     }
 
     .sidebar-section{
@@ -176,15 +173,17 @@
       display:flex;
       align-items:center;
       gap: 10px;
+      min-width: 0;
     }
     .avatar{
-      width: 40px; height: 40px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--accent), #7c3aed);
       display:grid;
       place-items:center;
       color:#fff;
-      font-weight: 800;
+      font-weight: 900;
       flex: 0 0 auto;
     }
     .user-meta{
@@ -192,7 +191,7 @@
     }
     .user-name{
       font-size: 14px;
-      font-weight: 700;
+      font-weight: 800;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -221,6 +220,10 @@
       font-size: 12px;
       cursor:pointer;
       touch-action: manipulation;
+      user-select: none;
+    }
+    .pill:hover{
+      background: var(--hover);
     }
 
     .nav-title{
@@ -229,10 +232,17 @@
       text-transform: uppercase;
       letter-spacing: .08em;
       color: var(--muted);
-      font-weight: 800;
+      font-weight: 900;
     }
 
-    .nav-item{
+    .tree{
+      display:flex;
+      flex-direction: column;
+      padding: 4px 0 10px;
+      gap: 2px;
+    }
+
+    .tree-home{
       display:flex;
       align-items:center;
       gap: 8px;
@@ -240,48 +250,89 @@
       cursor:pointer;
       user-select:none;
       font-size: 13px;
-      line-height: 1.2;
       color: var(--text);
+      border-left: 3px solid transparent;
       touch-action: manipulation;
     }
-    .nav-item:hover{ background: var(--hover); }
-    .nav-item.active{
-      background: var(--accent-2);
+    .tree-home:hover{ background: var(--hover); }
+    .tree-home.active{
+      background: var(--accent-soft);
       color: var(--accent);
       font-weight: 700;
-    }
-    .nav-sub{
-      padding-left: 22px;
-      font-size: 12px;
-      color: var(--muted);
+      border-left-color: var(--accent);
     }
 
-    .cat{
-      margin-top: 6px;
-      border-top: 1px solid var(--border);
+    .tree-node{
+      --depth: 0;
+      display:flex;
+      flex-direction: column;
+      min-width: 0;
     }
-    .cat-head{
+
+    .tree-row{
+      display:flex;
+      align-items:center;
+      gap: 4px;
+      min-width: 0;
+      padding: 2px 10px 2px calc(14px + (var(--depth) * 14px));
+    }
+
+    .tree-expander{
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor:pointer;
+      flex: 0 0 auto;
+      border-radius: 6px;
+    }
+    .tree-expander:hover{
+      background: var(--hover);
+      color: var(--text);
+    }
+
+    .tree-select{
+      flex: 1;
+      min-width: 0;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      cursor:pointer;
+      text-align: left;
       display:flex;
       align-items:center;
       gap: 8px;
-      padding: 10px 14px;
-      cursor:pointer;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--muted);
+      padding: 7px 8px;
+      border-radius: 8px;
       user-select:none;
+      touch-action: manipulation;
     }
-    .cat-head:hover{ color: var(--text); background: var(--hover); }
-    .chev{
-      margin-left:auto;
-      transition: transform .18s ease;
-      font-size: 10px;
+    .tree-select:hover{
+      background: var(--hover);
     }
-    .cat.open .chev{ transform: rotate(90deg); }
-    .cat-body{ display:none; }
-    .cat.open .cat-body{ display:block; }
+
+    .tree-select.active{
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .tree-children{
+      display:none;
+    }
+    .tree-node.open > .tree-children{
+      display:block;
+    }
+    .tree-node.open > .tree-row .tree-expander{
+      transform: rotate(90deg);
+    }
+
+    .children-inner{
+      display:flex;
+      flex-direction: column;
+      gap: 2px;
+    }
 
     .main{
       flex: 1;
@@ -294,36 +345,47 @@
       padding: 18px;
     }
 
-    .page{
-      max-width: 1100px;
+    .content-wrap{
+      max-width: var(--content-max);
       margin: 0 auto;
-      display: none;
+      min-height: 100%;
+      display:flex;
+      flex-direction: column;
+      gap: 16px;
     }
-    .page.show{ display:block; }
+
+    .view{
+      display:none;
+      min-width: 0;
+    }
+    .view.show{ display:block; }
 
     .hero{
-      padding: 14px 16px;
+      padding: 16px;
       border: 1px solid var(--border);
       background: var(--panel);
       border-radius: 16px;
       box-shadow: var(--shadow);
-      margin-bottom: 16px;
     }
+
     .hero-top{
       display:flex;
       align-items:center;
       gap: 10px;
-      margin-bottom: 8px;
       flex-wrap: wrap;
+      margin-bottom: 8px;
     }
+
     .hero-title{
       font-size: 20px;
-      font-weight: 800;
+      font-weight: 900;
+      word-break: break-word;
     }
+
     .hero-sub{
       font-size: 13px;
+      line-height: 1.65;
       color: var(--muted);
-      line-height: 1.6;
     }
 
     .section-head{
@@ -331,13 +393,15 @@
       align-items:center;
       justify-content: space-between;
       gap: 12px;
-      margin: 12px 0 10px;
       flex-wrap: wrap;
+      margin: 2px 0 10px;
     }
+
     .section-head h2{
       font-size: 17px;
-      font-weight: 800;
+      font-weight: 900;
     }
+
     .count{
       font-size: 12px;
       color: var(--muted);
@@ -345,6 +409,35 @@
       border: 1px solid var(--border);
       padding: 4px 9px;
       border-radius: 999px;
+    }
+
+    .crumbs{
+      display:flex;
+      align-items:center;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0 0 12px;
+      user-select: none;
+    }
+
+    .crumb{
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor:pointer;
+      padding: 2px 4px;
+      border-radius: 6px;
+    }
+    .crumb:hover{
+      background: var(--hover);
+      color: var(--text);
+    }
+    .crumb.active{
+      color: var(--text);
+      font-weight: 800;
+      cursor: default;
     }
 
     .grid{
@@ -355,8 +448,8 @@
 
     .card{
       border: 1px solid var(--border);
-      background: var(--panel);
       border-radius: 16px;
+      background: var(--panel);
       padding: 14px;
       box-shadow: var(--shadow);
       transition: transform .14s ease, border-color .14s ease;
@@ -366,12 +459,14 @@
       transform: translateY(-1px);
       border-color: var(--accent);
     }
+
     .card-name{
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
       word-break: break-word;
-      line-height: 1.35;
+      line-height: 1.4;
     }
+
     .card-meta{
       margin-top: 6px;
       display:flex;
@@ -381,14 +476,16 @@
       color: var(--muted);
       font-size: 12px;
     }
+
     .tag{
       padding: 3px 8px;
       border-radius: 999px;
       background: var(--badge-bg);
       color: var(--badge-text);
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
     }
+
     .card-foot{
       margin-top: 12px;
       padding-top: 10px;
@@ -397,7 +494,9 @@
       align-items:center;
       justify-content: space-between;
       gap: 10px;
+      flex-wrap: wrap;
     }
+
     .mini-btn{
       border: 1px solid var(--border);
       background: var(--bg);
@@ -409,21 +508,25 @@
       text-decoration:none;
       white-space: nowrap;
       touch-action: manipulation;
+      user-select: none;
+    }
+    .mini-btn:hover{
+      background: var(--hover);
     }
     .mini-btn.primary{
       border-color: var(--accent);
       color: var(--accent);
-      background: var(--accent-2);
+      background: var(--accent-soft);
     }
 
     .preview-wrap{
-      margin-top: 16px;
       border: 1px solid var(--border);
       background: var(--panel);
       border-radius: 16px;
       overflow: hidden;
       box-shadow: var(--shadow);
     }
+
     .preview-head{
       display:flex;
       align-items:center;
@@ -433,18 +536,21 @@
       border-bottom: 1px solid var(--border);
       flex-wrap: wrap;
     }
+
     .preview-name{
       font-size: 14px;
-      font-weight: 800;
+      font-weight: 900;
       word-break: break-word;
     }
+
     .preview-body{
       padding: 14px;
-      min-height: 120px;
+      min-height: 130px;
+      max-height: min(72vh, 780px);
       overflow:auto;
-      max-height: min(70vh, 760px);
       -webkit-overflow-scrolling: touch;
     }
+
     .preview-text{
       white-space: pre-wrap;
       word-break: break-word;
@@ -453,6 +559,7 @@
       line-height: 1.65;
       color: var(--text);
     }
+
     .preview-md{
       font-size: 14px;
       line-height: 1.75;
@@ -484,12 +591,33 @@
       padding-left: 12px;
       color: var(--muted);
     }
+    .preview-md img{
+      max-width: 100%;
+      border-radius: 10px;
+    }
+    .preview-md table{
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 10px 0;
+    }
+    .preview-md th,
+    .preview-md td{
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+    }
+    .preview-md th{
+      background: var(--panel-2);
+    }
 
     .state{
       padding: 18px 4px;
       color: var(--muted);
       font-size: 14px;
+      line-height: 1.6;
     }
+
     .spinner{
       width: 16px;
       height: 16px;
@@ -500,21 +628,118 @@
       display:inline-block;
       vertical-align: middle;
       margin-right: 8px;
+      flex: 0 0 auto;
     }
+
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .hidden{ display:none !important; }
 
-    @media (max-width: 900px){
+    .settings-modal{
+      position: fixed;
+      inset: 0;
+      display:none;
+      z-index: 60;
+    }
+    .settings-modal.open{ display:block; }
+
+    .settings-backdrop{
+      position:absolute;
+      inset: 0;
+      background: rgba(0,0,0,.42);
+    }
+
+    .settings-sheet{
+      position:absolute;
+      top: calc(var(--header-h) + 10px);
+      right: 10px;
+      width: min(360px, calc(100vw - 20px));
+      max-height: calc(100vh - var(--header-h) - 20px);
+      overflow:auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .settings-title{
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .settings-row{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-row:last-child{
+      border-bottom: none;
+    }
+
+    .settings-text{
+      display:flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .settings-label{
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .settings-desc{
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .toggle{
+      width: 38px;
+      height: 20px;
+      background: var(--border);
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+      flex: 0 0 auto;
+      transition: background .2s ease;
+    }
+    .toggle::after{
+      content:'';
+      position:absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      transition: left .2s ease;
+      box-shadow: 0 1px 4px rgba(0,0,0,.25);
+    }
+    .toggle.on{
+      background: var(--accent);
+    }
+    .toggle.on::after{
+      left: 20px;
+    }
+
+    @media (max-width: 980px){
       .sidebar{
         position: fixed;
         top: var(--header-h);
         left: 0;
         bottom: 0;
         transform: translateX(-102%);
+        box-shadow: var(--shadow);
         width: min(var(--sidebar-w), 86vw);
         flex-basis: auto;
-        box-shadow: var(--shadow);
       }
       .sidebar.open{
         transform: translateX(0);
@@ -522,31 +747,50 @@
       .main{
         padding: 14px;
       }
+      .grid{
+        grid-template-columns: 1fr;
+      }
     }
 
-    @media (min-width: 901px){
-      .menu-btn.mobile-only{ display:none; }
+    @media (max-width: 560px){
+      .brand-title{
+        font-size: 14px;
+      }
+      .hero-title{
+        font-size: 18px;
+      }
+      .section-head h2{
+        font-size: 16px;
+      }
+      .preview-body{
+        max-height: none;
+      }
+      .settings-sheet{
+        left: 10px;
+        right: 10px;
+        width: auto;
+      }
     }
   </style>
 </head>
 <body>
   <div class="app">
     <header>
-      <button class="menu-btn" id="menuBtn" aria-label="Open menu" type="button">
+      <button class="icon-btn" id="sidebarBtn" type="button" aria-label="Toggle sidebar">
         <div class="menu-lines"><span></span><span></span><span></span></div>
       </button>
 
       <div class="brand">
-        <span class="brand-title" id="repoTitle">MerStor</span>
+        <span class="brand-title" id="brandTitle">MerStor</span>
         <span class="badge">WIP</span>
       </div>
 
       <div class="spacer"></div>
 
-      <button class="icon-btn" id="themeBtn" title="Toggle theme" type="button">☾</button>
+      <button class="icon-btn" id="settingsBtn" type="button" aria-label="Open settings">⚙</button>
     </header>
 
-    <div class="layout">
+    <div class="layout" id="layout">
       <div class="overlay" id="overlay"></div>
 
       <aside class="sidebar" id="sidebar">
@@ -560,13 +804,14 @@
               </div>
             </div>
             <div class="side-actions">
-              <button class="pill" id="overviewBtn" type="button">Overview</button>
+              <button class="pill" id="homeBtn" type="button">Home</button>
               <button class="pill" id="refreshBtn" type="button">Refresh</button>
             </div>
           </div>
 
-          <div id="sidebarContent">
-            <div class="state" style="padding:14px;">
+          <div class="nav-title">Explorer</div>
+          <div class="tree" id="treeRoot">
+            <div class="state" style="padding: 14px;">
               <span class="spinner"></span> Loading repository...
             </div>
           </div>
@@ -574,221 +819,341 @@
       </aside>
 
       <main class="main" id="main">
-        <div class="page show" id="overviewPage">
-          <div class="hero">
-            <div class="hero-top">
-              <div class="hero-title" id="overviewTitle">Overview</div>
-              <span class="badge" id="repoVisibility">Public</span>
-            </div>
-            <div class="hero-sub" id="overviewMeta">
-              Loading README...
-            </div>
-          </div>
-
-          <div class="preview-wrap">
-            <div class="preview-head">
-              <div class="preview-name">README preview</div>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <a class="mini-btn" id="openReadmeRaw" href="#" target="_blank" rel="noreferrer">Open raw</a>
+        <div class="content-wrap">
+          <section class="view show" id="homeView">
+            <div class="hero">
+              <div class="hero-top">
+                <div class="hero-title" id="repoTitle">Loading...</div>
+                <span class="badge" id="repoVisibility">Public</span>
+              </div>
+              <div class="hero-sub" id="repoMeta">
+                Loading overview...
               </div>
             </div>
-            <div class="preview-body" id="readmeBody">
-              <div class="state"><span class="spinner"></span> Loading...</div>
-            </div>
-          </div>
-        </div>
 
-        <div class="page" id="folderPage">
-          <div class="section-head">
-            <h2 id="folderTitle">Files</h2>
-            <span class="count" id="folderCount">0 files</span>
-          </div>
-
-          <div class="grid" id="fileGrid"></div>
-
-          <div class="preview-wrap hidden" id="filePreviewWrap">
-            <div class="preview-head">
-              <div class="preview-name" id="filePreviewName">File preview</div>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <a class="mini-btn primary" id="downloadBtn" href="#" target="_blank" rel="noreferrer">Download</a>
-                <button class="mini-btn" id="closePreviewBtn" type="button">Close preview</button>
+            <div class="preview-wrap" style="margin-top:16px;">
+              <div class="preview-head">
+                <div class="preview-name">Overview source</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <a class="mini-btn" id="openSourceBtn" href="#" target="_blank" rel="noreferrer">Open raw</a>
+                </div>
+              </div>
+              <div class="preview-body" id="readmeBody">
+                <div class="state"><span class="spinner"></span> Loading...</div>
               </div>
             </div>
-            <div class="preview-body" id="filePreviewBody"></div>
-          </div>
+          </section>
+
+          <section class="view" id="folderView">
+            <div class="section-head">
+              <h2 id="folderTitle">Files</h2>
+              <span class="count" id="folderCount">0 files</span>
+            </div>
+
+            <div class="crumbs" id="crumbs"></div>
+
+            <div class="grid" id="fileGrid"></div>
+
+            <div class="preview-wrap hidden" id="filePreviewWrap" style="margin-top:16px;">
+              <div class="preview-head">
+                <div class="preview-name" id="filePreviewName">File preview</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  <a class="mini-btn primary" id="downloadBtn" href="#" target="_blank" rel="noreferrer">Download</a>
+                  <button class="mini-btn" id="closePreviewBtn" type="button">Close preview</button>
+                </div>
+              </div>
+              <div class="preview-body" id="filePreviewBody"></div>
+            </div>
+          </section>
         </div>
       </main>
     </div>
   </div>
 
+  <div class="settings-modal" id="settingsModal" aria-hidden="true">
+    <div class="settings-backdrop" id="settingsBackdrop"></div>
+    <div class="settings-sheet" role="dialog" aria-modal="true" aria-label="Settings">
+      <div class="settings-title">Settings</div>
+
+      <div class="settings-row">
+        <div class="settings-text">
+          <div class="settings-label">Dark mode</div>
+          <div class="settings-desc">Switch theme instantly.</div>
+        </div>
+        <div class="toggle" id="themeToggle" role="switch" aria-checked="false" tabindex="0"></div>
+      </div>
+
+      <div class="settings-row">
+        <div class="settings-text">
+          <div class="settings-label">Repository</div>
+          <div class="settings-desc" id="settingRepo">Loading...</div>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div class="settings-text">
+          <div class="settings-label">Visibility</div>
+          <div class="settings-desc" id="settingVisibility">...</div>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <div class="settings-text">
+          <div class="settings-label">Branch</div>
+          <div class="settings-desc" id="settingBranch">main</div>
+        </div>
+      </div>
+
+      <div class="settings-row">
+        <button class="pill" id="closeSettingsBtn" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const OWNER = "vyhuynh24092021-debug";
-    const REPO = "MyokyuuSAVE";
-    const API = `https://api.github.com/repos/${OWNER}/${REPO}`;
+    const OWNER = 'vyhuynh24092021-debug';
+    const REPO  = 'MyokyuuSAVE';
+    const API   = `https://api.github.com/repos/${OWNER}/${REPO}`;
 
     const $ = (id) => document.getElementById(id);
 
     const state = {
+      theme: localStorage.getItem('theme') || 'light',
       sidebarOpen: false,
-      theme: localStorage.getItem("theme") || "",
-      tree: [],
-      currentFolder: "",
-      currentFolderLabel: "",
+      activeView: 'home',
+      currentFolderPath: '',
+      currentFolderLabel: '',
       currentFile: null,
-      repoRoot: [],
+      rootItems: [],
+      repoInfo: null,
+      dirCache: new Map(),
+      fileCache: new Map(),
     };
 
-    const isReadmeLike = (name = "") => /^readme(\.[^./]+)?$/i.test(name.trim());
-    const fileExt = (name = "") => {
-      const i = name.lastIndexOf(".");
-      return i >= 0 ? name.slice(i + 1).toLowerCase() : "";
-    };
-
-    const sizeStr = (n) => {
-      if (typeof n !== "number") return "";
-      if (n < 1024) return `${n} B`;
-      if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-      return `${(n / 1024 / 1024).toFixed(1)} MB`;
-    };
-
-    const isPreviewableText = (name = "") => {
+    const isReadmeLike = (name = '') => /^readme(\.[a-z0-9]+)?$/i.test(String(name).trim());
+    const isTextPreviewable = (name = '') => {
       const ext = fileExt(name);
       return [
-        "txt","md","json","js","ts","jsx","tsx","html","htm","css","scss","less",
-        "py","java","kt","kts","c","cpp","h","hpp","go","rs","rb","php","lua",
-        "sh","bat","ps1","yml","yaml","xml","ini","cfg","conf","toml","csv",
-        "sql","log","dart","swift","mjs","cjs","vue","svelte","gradle","properties"
+        'txt','md','json','js','ts','jsx','tsx','html','htm','css','scss','less',
+        'py','java','kt','kts','c','cpp','h','hpp','go','rs','rb','php','lua',
+        'sh','bat','ps1','yml','yaml','xml','ini','cfg','conf','toml','csv',
+        'sql','log','dart','swift','mjs','cjs','vue','svelte','gradle','properties',
+        'diff','patch'
       ].includes(ext);
     };
 
-    function setTheme(next) {
-      if (next === "dark") document.documentElement.setAttribute("data-theme", "dark");
-      else document.documentElement.removeAttribute("data-theme");
-      localStorage.setItem("theme", next);
-      $("themeBtn").textContent = next === "dark" ? "☀" : "☾";
+    const isImagePreviewable = (name = '') => {
+      const ext = fileExt(name);
+      return ['png','jpg','jpeg','gif','webp','bmp','svg','avif'].includes(ext);
+    };
+
+    function fileExt(name = '') {
+      const i = String(name).lastIndexOf('.');
+      return i >= 0 ? String(name).slice(i + 1).toLowerCase() : '';
+    }
+
+    function sizeStr(n) {
+      if (typeof n !== 'number') return '';
+      if (n < 1024) return `${n} B`;
+      if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+      return `${(n / 1024 / 1024).toFixed(1)} MB`;
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function setTheme(theme) {
+      state.theme = theme === 'dark' ? 'dark' : 'light';
+      if (state.theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      else document.documentElement.removeAttribute('data-theme');
+
+      localStorage.setItem('theme', state.theme);
+      $('themeToggle').classList.toggle('on', state.theme === 'dark');
+      $('themeToggle').setAttribute('aria-checked', state.theme === 'dark' ? 'true' : 'false');
     }
 
     function toggleTheme() {
-      setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+      setTheme(state.theme === 'dark' ? 'light' : 'dark');
+    }
+
+    function openSettings() {
+      $('settingsModal').classList.add('open');
+      $('settingsModal').setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSettings() {
+      $('settingsModal').classList.remove('open');
+      $('settingsModal').setAttribute('aria-hidden', 'true');
     }
 
     function openSidebar() {
       state.sidebarOpen = true;
-      $("sidebar").classList.add("open");
-      $("overlay").classList.add("show");
-      $("menuBtn").setAttribute("aria-label", "Close menu");
+      $('sidebar').classList.add('open');
+      $('overlay').classList.add('show');
     }
 
     function closeSidebar() {
       state.sidebarOpen = false;
-      $("sidebar").classList.remove("open");
-      $("overlay").classList.remove("show");
-      $("menuBtn").setAttribute("aria-label", "Open menu");
+      $('sidebar').classList.remove('open');
+      $('overlay').classList.remove('show');
     }
 
     function toggleSidebar() {
       state.sidebarOpen ? closeSidebar() : openSidebar();
     }
 
-    function showOverview() {
-      $("overviewPage").classList.add("show");
-      $("folderPage").classList.remove("show");
-      clearActiveNav();
-      const home = $("nav-home");
-      if (home) home.classList.add("active");
-      closeSidebarOnMobile();
-    }
-
-    function showFolderView() {
-      $("overviewPage").classList.remove("show");
-      $("folderPage").classList.add("show");
-      clearActiveNav();
-    }
-
-    function clearActiveNav() {
-      document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
-    }
-
     function closeSidebarOnMobile() {
-      if (window.innerWidth <= 900) closeSidebar();
+      if (window.innerWidth <= 980) closeSidebar();
     }
 
     async function fetchJson(url) {
-      const res = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
+      const res = await fetch(url, {
+        headers: { Accept: 'application/vnd.github+json' }
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();
     }
 
-    async function loadOverview() {
-      showOverview();
-      $("overviewMeta").textContent = "Loading README...";
-      $("readmeBody").innerHTML = '<div class="state"><span class="spinner"></span> Loading...</div>';
-      $("openReadmeRaw").href = "#";
+    async function fetchContents(path = '') {
+      const key = path || '__root__';
+      if (state.dirCache.has(key)) return state.dirCache.get(key);
 
-      try {
-        const readmeRes = await fetch(`${API}/readme`, {
-          headers: { Accept: "application/vnd.github.raw" }
+      const url = path ? `${API}/contents/${path}` : `${API}/contents`;
+      const data = await fetchJson(url);
+
+      const list = Array.isArray(data) ? data : [];
+      const filtered = list
+        .filter(item => item.type === 'dir' || item.type === 'file')
+        .filter(item => !isReadmeLike(item.name))
+        .sort((a, b) => {
+          if (a.type !== b.type) return a.type === 'dir' ? -1 : 1;
+          return a.name.localeCompare(b.name);
         });
-        const readmeText = await readmeRes.text();
-        $("readmeBody").innerHTML = marked.parse(readmeText);
-        $("overviewMeta").textContent = "README loaded from repository root.";
-        $("openReadmeRaw").href = `${API}/readme`;
-      } catch {
-        $("readmeBody").innerHTML = '<div class="state">Could not load README.</div>';
-        $("overviewMeta").textContent = "No README available.";
-      }
+
+      state.dirCache.set(key, filtered);
+      return filtered;
     }
 
-    async function loadFolder(path = "", label = "Files") {
-      showFolderView();
-      state.currentFolder = path;
-      state.currentFolderLabel = label;
-      state.currentFile = null;
+    function setActiveTreeHome() {
+      document.querySelectorAll('.tree-home').forEach(el => el.classList.remove('active'));
+      const home = $('homeTreeItem');
+      if (home) home.classList.add('active');
+      document.querySelectorAll('.tree-select').forEach(el => el.classList.remove('active'));
+    }
 
-      $("folderTitle").textContent = label;
-      $("folderCount").textContent = "Loading...";
-      $("fileGrid").innerHTML = '<div class="state"><span class="spinner"></span> Loading files...</div>';
-      $("filePreviewWrap").classList.add("hidden");
-      $("filePreviewBody").innerHTML = "";
+    function setActiveTreePath(path) {
+      document.querySelectorAll('.tree-home').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tree-select').forEach(el => {
+        if (el.dataset.path === path) el.classList.add('active');
+        else el.classList.remove('active');
+      });
+    }
 
-      try {
-        const items = await fetchJson(`${API}/contents/${path}`);
-        const filtered = items
-          .filter(item => item.type === "file")
-          .filter(item => !isReadmeLike(item.name));
+    function showHome() {
+      state.activeView = 'home';
+      $('homeView').classList.add('show');
+      $('folderView').classList.remove('show');
+      setActiveTreeHome();
+      closeSidebarOnMobile();
+    }
 
-        $("folderCount").textContent = `${filtered.length} file${filtered.length === 1 ? "" : "s"}`;
+    function showFolder() {
+      state.activeView = 'folder';
+      $('homeView').classList.remove('show');
+      $('folderView').classList.add('show');
+    }
 
-        if (!filtered.length) {
-          $("fileGrid").innerHTML = '<div class="state">No visible files here.</div>';
-          return;
-        }
+    function buildBreadcrumb(path) {
+      const parts = path ? path.split('/').filter(Boolean) : [];
+      const crumbs = [];
 
-        $("fileGrid").innerHTML = filtered.map(file => `
+      crumbs.push(`<button class="crumb ${parts.length === 0 ? 'active' : ''}" data-crumb="">Home</button>`);
+
+      let acc = '';
+      parts.forEach((part, index) => {
+        acc = acc ? `${acc}/${part}` : part;
+        const active = index === parts.length - 1;
+        crumbs.push(`<span>›</span>`);
+        crumbs.push(`<button class="crumb ${active ? 'active' : ''}" data-crumb="${escapeHtml(acc)}">${escapeHtml(part)}</button>`);
+      });
+
+      $('crumbs').innerHTML = crumbs.join('');
+      $('crumbs').querySelectorAll('[data-crumb]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const path = btn.dataset.crumb || '';
+          if (!path) {
+            showHome();
+            return;
+          }
+          loadFolderView(path, path.split('/').pop());
+        });
+      });
+    }
+
+    function renderFileGrid(items) {
+      if (!items.length) {
+        $('fileGrid').innerHTML = '<div class="state">No visible files here.</div>';
+        return;
+      }
+
+      $('fileGrid').innerHTML = items.map(file => {
+        const ext = fileExt(file.name) || 'file';
+        return `
           <article class="card">
             <div class="card-name">${escapeHtml(file.name)}</div>
             <div class="card-meta">
               <span>${sizeStr(file.size)}</span>
-              <span class="tag">.${escapeHtml(fileExt(file.name) || "file")}</span>
+              <span class="tag">.${escapeHtml(ext)}</span>
             </div>
             <div class="card-foot">
-              <button class="mini-btn primary" type="button" data-preview="${encodeURIComponent(file.path)}">Preview</button>
-              <a class="mini-btn" href="${file.download_url}" target="_blank" rel="noreferrer" download="${escapeAttr(file.name)}">Download</a>
+              <button class="mini-btn primary" type="button" data-preview="${escapeHtml(file.path)}" data-download="${escapeHtml(file.download_url)}" data-name="${escapeHtml(file.name)}">Preview</button>
+              <a class="mini-btn" href="${escapeHtml(file.download_url)}" download="${escapeHtml(file.name)}" target="_blank" rel="noreferrer">Download</a>
             </div>
           </article>
-        `).join("");
+        `;
+      }).join('');
 
-        document.querySelectorAll("[data-preview]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const filePath = decodeURIComponent(btn.getAttribute("data-preview"));
-            const file = filtered.find(x => x.path === filePath);
-            if (file) openFilePreview(file);
+      $('fileGrid').querySelectorAll('[data-preview]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          openFilePreview({
+            path: btn.dataset.preview,
+            download_url: btn.dataset.download,
+            name: btn.dataset.name
           });
         });
+      });
+    }
 
+    async function loadFolderView(path = '', label = 'Files') {
+      showFolder();
+      state.currentFolderPath = path;
+      state.currentFolderLabel = label;
+      state.currentFile = null;
+
+      $('folderTitle').textContent = label || 'Files';
+      $('folderCount').textContent = 'Loading...';
+      $('fileGrid').innerHTML = '<div class="state"><span class="spinner"></span> Loading files...</div>';
+      $('filePreviewWrap').classList.add('hidden');
+      $('filePreviewBody').innerHTML = '';
+
+      setActiveTreePath(path);
+      buildBreadcrumb(path);
+
+      try {
+        const items = await fetchContents(path);
+        const files = items.filter(item => item.type === 'file');
+
+        $('folderCount').textContent = `${files.length} file${files.length === 1 ? '' : 's'}`;
+        renderFileGrid(files);
       } catch {
-        $("fileGrid").innerHTML = '<div class="state">Could not load files.</div>';
-        $("folderCount").textContent = "0 files";
+        $('folderCount').textContent = '0 files';
+        $('fileGrid').innerHTML = '<div class="state">Could not load files.</div>';
       }
 
       closeSidebarOnMobile();
@@ -796,177 +1161,304 @@
 
     async function openFilePreview(file) {
       state.currentFile = file;
-      $("filePreviewWrap").classList.remove("hidden");
-      $("filePreviewName").textContent = file.path;
-      $("downloadBtn").href = file.download_url;
-      $("filePreviewBody").innerHTML = '<div class="state"><span class="spinner"></span> Loading preview...</div>';
-
-      if (!isPreviewableText(file.name) || file.size > 1024 * 1024) {
-        $("filePreviewBody").innerHTML =
-          `<div class="state">
-            File preview is unavailable for this type or file size.
-            <br><br>
-            Use Download to open it directly.
-          </div>`;
-        return;
-      }
+      $('filePreviewWrap').classList.remove('hidden');
+      $('filePreviewName').textContent = file.path;
+      $('downloadBtn').href = file.download_url;
+      $('filePreviewBody').innerHTML = '<div class="state"><span class="spinner"></span> Loading preview...</div>';
 
       try {
+        if (isImagePreviewable(file.name)) {
+          $('filePreviewBody').innerHTML = `<img src="${escapeHtml(file.download_url)}" alt="${escapeHtml(file.name)}" style="max-width:100%;border-radius:12px;display:block;">`;
+          $('filePreviewWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
+
+        if (!isTextPreviewable(file.name) || file.size > 1024 * 1024 * 2) {
+          $('filePreviewBody').innerHTML = `
+            <div class="state">
+              File preview is unavailable for this type or file size.
+              <br><br>
+              Use Download to open it directly.
+            </div>
+          `;
+          $('filePreviewWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          return;
+        }
+
         const res = await fetch(file.download_url);
         const text = await res.text();
 
-        if (file.name.toLowerCase().endsWith(".md")) {
-          $("filePreviewBody").innerHTML = `<div class="preview-md">${marked.parse(text)}</div>`;
+        if (fileExt(file.name) === 'md') {
+          $('filePreviewBody').innerHTML = `<div class="preview-md">${marked.parse(text)}</div>`;
         } else {
-          $("filePreviewBody").innerHTML = `<pre class="preview-text"></pre>`;
-          $("filePreviewBody .preview-text").textContent = text;
+          $('filePreviewBody').innerHTML = `<pre class="preview-text"></pre>`;
+          $('filePreviewBody .preview-text').textContent = text;
         }
 
-        $("filePreviewWrap").scrollIntoView({ behavior: "smooth", block: "start" });
+        $('filePreviewWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
       } catch {
-        $("filePreviewBody").innerHTML = '<div class="state">Could not load preview.</div>';
+        $('filePreviewBody').innerHTML = '<div class="state">Could not load preview.</div>';
       }
     }
 
     function closeFilePreview() {
-      $("filePreviewWrap").classList.add("hidden");
-      $("filePreviewBody").innerHTML = "";
+      $('filePreviewWrap').classList.add('hidden');
+      $('filePreviewBody').innerHTML = '';
       state.currentFile = null;
     }
 
-    function escapeHtml(s) {
-      return String(s)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;");
-    }
+    async function loadHome() {
+      showHome();
 
-    function escapeAttr(s) {
-      return String(s).replaceAll('"', "&quot;");
-    }
+      try {
+        const [repoInfo, readmeRes] = await Promise.all([
+          fetchJson(API),
+          fetch(`${API}/readme`, { headers: { Accept: 'application/vnd.github.raw' } })
+        ]);
 
-    function renderSidebar(rootItems) {
-      const sidebar = $("sidebarContent");
+        state.repoInfo = repoInfo;
 
-      const dirs = rootItems.filter(x => x.type === "dir" && x.name !== ".github");
+        $('brandTitle').textContent = repoInfo.name || REPO;
+        $('repoTitle').textContent = repoInfo.name || REPO;
+        $('repoVisibility').textContent = repoInfo.private ? 'Private' : 'Public';
+        $('settingVisibility').textContent = repoInfo.private ? 'Private' : 'Public';
+        $('settingRepo').textContent = `${repoInfo.full_name || `${OWNER}/${REPO}`}`;
+        $('settingBranch').textContent = repoInfo.default_branch || 'main';
+        $('userName').textContent = repoInfo.name || REPO;
+        $('userHandle').textContent = `@${OWNER}`;
+        $('avatarText').textContent = (repoInfo.name || REPO).charAt(0).toUpperCase();
 
-      let html = `
-        <div class="nav-title">Home</div>
-        <div class="nav-item active" id="nav-home">📄 Overview</div>
-        <div class="nav-title">Scripts</div>
-      `;
+        const desc = repoInfo.description || 'Overview from repository source.';
+        $('repoMeta').textContent = desc;
 
-      if (!dirs.length) {
-        html += `<div class="state" style="padding:14px;">No folders found.</div>`;
-        sidebar.innerHTML = html;
-        $("nav-home").addEventListener("click", () => loadOverview());
-        return;
+        const readmeText = await readmeRes.text();
+        $('readmeBody').innerHTML = marked.parse(readmeText);
+        $('openSourceBtn').href = `${API}/readme`;
+      } catch {
+        $('repoTitle').textContent = REPO;
+        $('repoMeta').textContent = 'Could not load overview source.';
+        $('readmeBody').innerHTML = '<div class="state">Could not load overview.</div>';
+        $('settingRepo').textContent = `${OWNER}/${REPO}`;
+        $('settingVisibility').textContent = 'Unknown';
+        $('openSourceBtn').href = '#';
       }
+    }
 
-      dirs.forEach((dir, idx) => {
-        const catId = `cat-${idx}`;
-        const bodyId = `body-${idx}`;
-        html += `
-          <div class="cat" id="${catId}">
-            <div class="cat-head" data-toggle="${idx}">
-              ${escapeHtml(dir.name)}
-              <span class="chev">▶</span>
-            </div>
-            <div class="cat-body" id="${bodyId}">
-              <div class="state" style="padding:10px 14px;">Loading...</div>
+    function createTreeItem(item, depth = 0) {
+      if (item.type === 'file') {
+        return `
+          <div class="tree-node" style="--depth:${depth}">
+            <div class="tree-row">
+              <button class="tree-select file-select" type="button"
+                data-action="file"
+                data-path="${escapeHtml(item.path)}"
+                data-download="${escapeHtml(item.download_url)}"
+                data-name="${escapeHtml(item.name)}">
+                📄 <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(item.name)}</span>
+              </button>
             </div>
           </div>
         `;
-      });
+      }
 
-      sidebar.innerHTML = html;
+      const hasChildren = true;
+      return `
+        <div class="tree-node dir" data-path="${escapeHtml(item.path)}" data-loaded="0" data-depth="${depth}" style="--depth:${depth}">
+          <div class="tree-row">
+            <button class="tree-expander" type="button" data-action="toggle" aria-label="Toggle folder" ${hasChildren ? '' : 'disabled'}>▶</button>
+            <button class="tree-select dir-select" type="button" data-action="open-dir" data-path="${escapeHtml(item.path)}" data-name="${escapeHtml(item.name)}">
+              📁 <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(item.name)}</span>
+            </button>
+          </div>
+          <div class="tree-children">
+            <div class="children-inner"></div>
+          </div>
+        </div>
+      `;
+    }
 
-      const navHome = $("nav-home");
-      navHome.addEventListener("click", () => loadOverview());
+    async function loadTreeChildren(dirNode) {
+      const path = dirNode.dataset.path || '';
+      const loaded = dirNode.dataset.loaded === '1';
+      if (loaded) return;
 
-      dirs.forEach(async (dir, idx) => {
-        const cat = $(`cat-${idx}`);
-        const body = $(`body-${idx}`);
-        const head = cat.querySelector(".cat-head");
-        head.addEventListener("click", async () => {
-          cat.classList.toggle("open");
+      const inner = dirNode.querySelector('.children-inner');
+      inner.innerHTML = '<div class="state" style="padding:8px 14px;"><span class="spinner"></span> Loading...</div>';
 
-          if (cat.dataset.loaded === "1") return;
-          cat.dataset.loaded = "1";
+      try {
+        const items = await fetchContents(path);
+        const html = items.map(item => createTreeItem(item, Number(dirNode.dataset.depth || 0) + 1)).join('');
+        inner.innerHTML = html || '<div class="state" style="padding:8px 14px;">Empty</div>';
+        dirNode.dataset.loaded = '1';
 
-          try {
-            const items = await fetchJson(`${API}/contents/${dir.path}`);
-            const visibleDirs = items.filter(x => x.type === "dir");
-            const visibleFiles = items.filter(x => x.type === "file" && !isReadmeLike(x.name));
+        inner.querySelectorAll('.dir-select').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const p = btn.dataset.path;
+            const n = btn.dataset.name;
+            loadFolderView(p, n);
+          });
+        });
 
-            let inner = "";
+        inner.querySelectorAll('.tree-expander').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const node = btn.closest('.tree-node.dir');
+            node.classList.toggle('open');
+            if (node.classList.contains('open')) await loadTreeChildren(node);
+          });
+        });
 
-            if (visibleDirs.length) {
-              visibleDirs.forEach(sub => {
-                inner += `<div class="nav-item nav-sub" data-folder="${escapeAttr(sub.path)}">📁 ${escapeHtml(sub.name)}</div>`;
-              });
-            }
-
-            if (visibleFiles.length && !visibleDirs.length) {
-              inner += `<div class="nav-item nav-sub" data-folder="${escapeAttr(dir.path)}">📁 ${escapeHtml(dir.name)}</div>`;
-            }
-
-            if (!visibleDirs.length && !visibleFiles.length) {
-              inner = `<div class="state" style="padding:10px 14px;">Empty</div>`;
-            }
-
-            body.innerHTML = inner;
-
-            body.querySelectorAll("[data-folder]").forEach(el => {
-              el.addEventListener("click", () => {
-                const p = el.getAttribute("data-folder");
-                const label = el.textContent.replace(/^📁\s*/, "").trim();
-                loadFolder(p, label);
-              });
+        inner.querySelectorAll('.file-select').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            openFilePreview({
+              path: btn.dataset.path,
+              download_url: btn.dataset.download,
+              name: btn.dataset.name
             });
-          } catch {
-            body.innerHTML = `<div class="state" style="padding:10px 14px;">Could not load folder.</div>`;
+            closeSidebarOnMobile();
+          });
+        });
+      } catch {
+        inner.innerHTML = '<div class="state" style="padding:8px 14px;">Could not load folder.</div>';
+      }
+    }
+
+    async function buildSidebar() {
+      try {
+        const root = await fetchContents('');
+        state.rootItems = root;
+
+        const rootFiles = root.filter(item => item.type === 'file');
+        const rootDirs = root.filter(item => item.type === 'dir');
+
+        let html = `
+          <div class="tree-home active" id="homeTreeItem" role="button" tabindex="0">🏠 Home</div>
+        `;
+
+        if (rootDirs.length || rootFiles.length) {
+          html += `<div class="nav-title">Root</div>`;
+          html += `<div class="tree" id="rootTree">`;
+
+          rootDirs.forEach(dir => {
+            html += createTreeItem(dir, 0);
+          });
+
+          rootFiles.forEach(file => {
+            html += createTreeItem(file, 0);
+          });
+
+          html += `</div>`;
+        } else {
+          html += `<div class="state" style="padding:14px;">No visible items.</div>`;
+        }
+
+        $('treeRoot').innerHTML = html;
+
+        $('homeTreeItem').addEventListener('click', () => {
+          setActiveTreeHome();
+          loadHome();
+        });
+
+        $('homeTreeItem').addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setActiveTreeHome();
+            loadHome();
           }
         });
+
+        document.querySelectorAll('#treeRoot .dir-select').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const p = btn.dataset.path;
+            const n = btn.dataset.name;
+            loadFolderView(p, n);
+          });
+        });
+
+        document.querySelectorAll('#treeRoot .file-select').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            openFilePreview({
+              path: btn.dataset.path,
+              download_url: btn.dataset.download,
+              name: btn.dataset.name
+            });
+            closeSidebarOnMobile();
+          });
+        });
+
+        document.querySelectorAll('#treeRoot .tree-expander').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const node = btn.closest('.tree-node.dir');
+            node.classList.toggle('open');
+            if (node.classList.contains('open')) await loadTreeChildren(node);
+          });
+        });
+      } catch {
+        $('treeRoot').innerHTML = '<div class="state" style="padding:14px;">Could not load repository.</div>';
+      }
+    }
+
+    function bindGlobalUI() {
+      $('sidebarBtn').addEventListener('click', toggleSidebar);
+      $('overlay').addEventListener('click', closeSidebar);
+      $('settingsBtn').addEventListener('click', openSettings);
+      $('settingsBackdrop').addEventListener('click', closeSettings);
+      $('closeSettingsBtn').addEventListener('click', closeSettings);
+      $('themeToggle').addEventListener('click', toggleTheme);
+      $('themeToggle').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleTheme();
+        }
+      });
+      $('homeBtn').addEventListener('click', () => {
+        setActiveTreeHome();
+        loadHome();
+      });
+      $('refreshBtn').addEventListener('click', async () => {
+        state.dirCache.clear();
+        state.fileCache.clear();
+        location.reload();
+      });
+      $('closePreviewBtn').addEventListener('click', closeFilePreview);
+
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 980) closeSidebar();
       });
     }
 
     async function init() {
-      if (state.theme === "dark") setTheme("dark");
-      else setTheme("light");
+      bindGlobalUI();
+      setTheme(state.theme);
+      $('brandTitle').textContent = REPO;
+      $('repoTitle').textContent = REPO;
+      $('userName').textContent = REPO;
+      $('userHandle').textContent = `@${OWNER}`;
+      $('avatarText').textContent = REPO.charAt(0).toUpperCase();
+      $('settingRepo').textContent = `${OWNER}/${REPO}`;
+      $('settingBranch').textContent = 'main';
+      $('settingVisibility').textContent = 'Loading...';
 
-      $("menuBtn").addEventListener("click", toggleSidebar);
-      $("overlay").addEventListener("click", closeSidebar);
-      $("themeBtn").addEventListener("click", toggleTheme);
-      $("overviewBtn").addEventListener("click", loadOverview);
-      $("refreshBtn").addEventListener("click", () => location.reload());
-      $("closePreviewBtn").addEventListener("click", closeFilePreview);
-
-      $("userName").textContent = REPO;
-      $("userHandle").textContent = `@${OWNER}`;
-      $("repoTitle").textContent = REPO;
-      $("avatarText").textContent = (REPO[0] || "M").toUpperCase();
+      await Promise.all([
+        buildSidebar(),
+        loadHome()
+      ]);
 
       try {
         const repoInfo = await fetchJson(API);
-        $("repoVisibility").textContent = repoInfo.private ? "Private" : "Public";
+        $('repoVisibility').textContent = repoInfo.private ? 'Private' : 'Public';
+        $('settingVisibility').textContent = repoInfo.private ? 'Private' : 'Public';
+        $('settingRepo').textContent = repoInfo.full_name || `${OWNER}/${REPO}`;
+        $('settingBranch').textContent = repoInfo.default_branch || 'main';
+        $('repoMeta').textContent = repoInfo.description || 'Overview from repository source.';
       } catch {
-        $("repoVisibility").textContent = "Repo";
+        $('settingVisibility').textContent = 'Unknown';
       }
-
-      try {
-        const root = await fetchJson(`${API}/contents`);
-        state.repoRoot = root;
-        renderSidebar(root);
-        await loadOverview();
-      } catch {
-        $("sidebarContent").innerHTML = `<div class="state" style="padding:14px;">Could not load repository.</div>`;
-        $("readmeBody").innerHTML = `<div class="state">Could not load README.</div>`;
-      }
-
-      window.addEventListener("resize", () => {
-        if (window.innerWidth > 900) closeSidebar();
-      });
     }
 
     init();
