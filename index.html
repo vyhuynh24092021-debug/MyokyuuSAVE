@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
     <title>MerStor</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js">
     </script>
@@ -17,33 +17,38 @@
         }
 
         :root {
-            --bg: #fafafa;
+            --bg: #f5f7fa;
             --surface: #ffffff;
-            --surface2: #f0f0f0;
-            --border: #d4d4d4;
-            --text: #1a1a1a;
-            --text-muted: #6b6b6b;
-            --accent: #1a1a1a;
-            --accent-bg: #e8e8e8;
-            --active-bg: #d0d0d0;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-            --radius: 0px;
+            --surface2: #f0f2f5;
+            --border: #d0d7de;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --accent: #2563eb;
+            --accent-bg: #e0e7ff;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            --radius: 12px;
             --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             --readme-size: 15px;
-            --transition: 0.25s ease;
-            --underscore: '_________________________________';
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --header-h: 60px;
+            --sidebar-w: 260px;
+            --bg-image: none;
+            --bg-blur: 0px;
+            --bg-brightness: 1;
+            --bg-opacity: 0.6;
+            --bg-position: center;
         }
+
         [data-theme="dark"] {
-            --bg: #121212;
-            --surface: #1e1e1e;
-            --surface2: #2a2a2a;
-            --border: #3a3a3a;
-            --text: #eeeeee;
-            --text-muted: #9a9a9a;
-            --accent: #eeeeee;
-            --accent-bg: #2a2a2a;
-            --active-bg: #333333;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface2: #334155;
+            --border: #475569;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #60a5fa;
+            --accent-bg: #1e293b;
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
         }
 
         html {
@@ -60,144 +65,75 @@
             height: 100vh;
             overflow: hidden;
             transition: background var(--transition), color var(--transition);
-            line-height: 1.5;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        /* ─── BACKGROUND OVERLAY ─── */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-position: var(--bg-position);
+            filter: blur(var(--bg-blur)) brightness(var(--bg-brightness));
+            opacity: var(--bg-opacity);
+            transition: filter 0.4s, opacity 0.4s;
+        }
+        .bg-overlay.active {
+            pointer-events: auto;
         }
 
         /* ─── SCROLLBAR ─── */
         ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
+            width: 5px;
+            height: 5px;
         }
         ::-webkit-scrollbar-track {
             background: transparent;
         }
         ::-webkit-scrollbar-thumb {
             background: var(--border);
-            border-radius: 0px;
-        }
-
-        /* ─── UNDERSCORE BUTTON UTILITY ─── */
-        .btn-underscore {
-            display: inline-block;
-            font-family: var(--font);
-            font-size: 0.7rem;
-            font-weight: 500;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            padding: 6px 14px;
-            background: var(--surface2);
-            color: var(--text);
-            border: 1px solid var(--border);
-            cursor: pointer;
-            transition: all var(--transition);
-            user-select: none;
-            text-align: center;
-            line-height: 1.4;
-            position: relative;
-            text-decoration: none;
-            border-radius: 0px;
-        }
-        .btn-underscore:hover {
-            background: var(--active-bg);
-            border-color: var(--text);
-        }
-        .btn-underscore:active {
-            transform: scale(0.97);
-        }
-        .btn-underscore .uscore {
-            display: block;
-            font-size: 0.5rem;
-            letter-spacing: 0.12em;
-            color: var(--text-muted);
-            font-weight: 300;
-            line-height: 1;
-            margin-top: 1px;
-            word-break: break-all;
-            max-width: 100%;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-        .btn-underscore .label {
-            display: block;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-        }
-        .btn-underscore .label+.uscore {
-            margin-top: 2px;
-        }
-
-        .btn-underscore.primary {
-            background: var(--text);
-            color: var(--bg);
-            border-color: var(--text);
-        }
-        .btn-underscore.primary:hover {
-            opacity: 0.8;
-        }
-        .btn-underscore.primary .uscore {
-            color: var(--bg);
-            opacity: 0.6;
-        }
-
-        .btn-underscore.small {
-            padding: 4px 10px;
-            font-size: 0.6rem;
-        }
-        .btn-underscore.small .uscore {
-            font-size: 0.4rem;
-        }
-
-        .btn-underscore.toggle-on {
-            background: var(--text);
-            color: var(--bg);
-            border-color: var(--text);
-        }
-        .btn-underscore.toggle-on .uscore {
-            color: var(--bg);
-            opacity: 0.6;
-        }
-        .btn-underscore.toggle-off {
-            background: var(--surface2);
-            color: var(--text-muted);
-            border-color: var(--border);
-        }
-        .btn-underscore.toggle-off .uscore {
-            color: var(--text-muted);
-            opacity: 0.4;
+            border-radius: 10px;
         }
 
         /* ─── HEADER ─── */
         header {
-            height: 56px;
+            height: var(--header-h);
             background: var(--surface);
             border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            padding: 0 14px;
-            gap: 10px;
+            padding: 0 20px;
+            gap: 16px;
             flex-shrink: 0;
-            transition: background var(--transition), border var(--transition);
             position: relative;
-            z-index: 20;
+            z-index: 30;
+            backdrop-filter: blur(4px);
+            transition: background var(--transition), border var(--transition);
         }
         .header-left {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 14px;
             flex: 1;
             min-width: 0;
         }
         .header-right {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             flex-shrink: 0;
         }
 
         .menu-btn {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border: 1px solid var(--border);
             background: var(--surface2);
             cursor: pointer;
@@ -205,36 +141,32 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 3px;
+            gap: 4px;
+            border-radius: var(--radius);
             transition: all var(--transition);
             flex-shrink: 0;
-            padding: 0;
-            border-radius: 0px;
         }
         .menu-btn:hover {
-            background: var(--active-bg);
-            border-color: var(--text);
+            background: var(--accent-bg);
+            border-color: var(--accent);
         }
         .menu-btn span {
             display: block;
-            width: 14px;
-            height: 1.5px;
+            width: 16px;
+            height: 2px;
             background: var(--text);
-            border-radius: 0px;
+            border-radius: 2px;
             transition: background var(--transition);
         }
         .menu-btn span:nth-child(2) {
-            width: 10px;
+            width: 12px;
         }
         .menu-btn span:nth-child(3) {
-            width: 6px;
-        }
-        .menu-btn.active span {
-            background: var(--text-muted);
+            width: 8px;
         }
 
         .site-name {
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 700;
             letter-spacing: -0.02em;
             color: var(--text);
@@ -242,7 +174,7 @@
         }
         .site-name .hl {
             font-weight: 300;
-            color: var(--text-muted);
+            color: var(--accent);
         }
         .wip-badge {
             font-size: 0.55rem;
@@ -251,212 +183,217 @@
             text-transform: uppercase;
             color: var(--text-muted);
             border: 1px solid var(--border);
-            padding: 1px 8px;
+            padding: 2px 10px;
             background: var(--surface2);
-            white-space: nowrap;
+            border-radius: 20px;
         }
 
         .header-btn {
-            height: 36px;
-            padding: 0 14px;
+            height: 38px;
+            padding: 0 16px;
             border: 1px solid var(--border);
             background: var(--surface2);
             cursor: pointer;
+            border-radius: var(--radius);
             transition: all var(--transition);
             font-family: var(--font);
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             font-weight: 600;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.04em;
             text-transform: uppercase;
             color: var(--text);
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 4px;
-            border-radius: 0px;
+            gap: 6px;
         }
         .header-btn:hover {
-            background: var(--active-bg);
-            border-color: var(--text);
+            background: var(--accent-bg);
+            border-color: var(--accent);
         }
         .header-btn.active {
-            background: var(--text);
-            color: var(--bg);
-            border-color: var(--text);
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
         }
         .header-btn .us {
             font-size: 0.45rem;
             letter-spacing: 0.15em;
             color: var(--text-muted);
             font-weight: 300;
-            display: block;
-            max-width: 60px;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
         }
         .header-btn.active .us {
-            color: var(--bg);
-            opacity: 0.6;
+            color: rgba(255, 255, 255, 0.6);
         }
 
-        /* ─── SETTINGS DROPDOWN ─── */
-        .settings-dropdown {
-            position: absolute;
-            top: 60px;
-            right: 10px;
-            width: min(340px, calc(100vw - 20px));
-            max-height: calc(100vh - 80px);
-            overflow-y: auto;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            padding: 18px 16px 16px;
-            display: none;
-            z-index: 100;
+        /* ─── SETTINGS PANEL (drawer) ─── */
+        .settings-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 40;
             opacity: 0;
-            transform: translateY(-6px);
-            transition: opacity 0.2s, transform 0.2s;
-            border-radius: 0px;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(2px);
         }
-        .settings-dropdown.open {
-            display: block;
+        .settings-overlay.open {
             opacity: 1;
-            transform: translateY(0);
+            pointer-events: auto;
         }
-        .settings-dropdown::-webkit-scrollbar {
+
+        .settings-drawer {
+            position: fixed;
+            top: 0;
+            right: -440px;
+            width: min(420px, 92vw);
+            max-width: 420px;
+            height: 100%;
+            background: var(--surface);
+            box-shadow: -4px 0 30px rgba(0, 0, 0, 0.15);
+            z-index: 50;
+            transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-left: 1px solid var(--border);
+        }
+        .settings-drawer.open {
+            right: 0;
+        }
+        .settings-drawer .drawer-header {
+            padding: 20px 24px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .settings-drawer .drawer-header h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+        .settings-drawer .drawer-header .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0 8px;
+            transition: color 0.2s;
+        }
+        .settings-drawer .drawer-header .close-btn:hover {
+            color: var(--text);
+        }
+
+        .settings-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 24px 30px;
+        }
+        .settings-scroll::-webkit-scrollbar {
             width: 3px;
         }
-        .settings-dropdown::-webkit-scrollbar-thumb {
-            background: var(--border);
-        }
 
-        .sd-title {
-            font-size: 0.6rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: var(--text-muted);
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .setting-group {
+            margin-bottom: 20px;
         }
-        .sd-title .us {
-            font-size: 0.45rem;
-            letter-spacing: 0.2em;
-            color: var(--text-muted);
-            opacity: 0.4;
-            font-weight: 300;
-        }
-
-        .sd-group {
-            margin-bottom: 14px;
-        }
-        .sd-group:last-child {
+        .setting-group:last-child {
             margin-bottom: 0;
         }
-        .sd-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 3px;
-            letter-spacing: 0.02em;
-        }
-        .sd-label .hint {
-            font-weight: 400;
+        .setting-group .group-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
             color: var(--text-muted);
-            font-size: 0.6rem;
+            margin-bottom: 6px;
         }
-        .sd-desc {
-            font-size: 0.6rem;
-            color: var(--text-muted);
-            margin-bottom: 5px;
-            line-height: 1.4;
-        }
-
-        .toggle-row {
+        .setting-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 3px 0;
+            padding: 6px 0;
             gap: 12px;
         }
-        .toggle-row span {
-            font-size: 0.75rem;
+        .setting-row .label {
+            font-size: 0.85rem;
             font-weight: 500;
         }
-
-        .sd-divider {
-            height: 1px;
-            background: var(--border);
-            margin: 12px 0;
-        }
-
-        .sd-avatar-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 2px 0;
-        }
-        .sd-avatar {
-            width: 32px;
-            height: 32px;
-            border: 1px solid var(--border);
-            background: var(--surface2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .setting-row .desc {
             font-size: 0.7rem;
-            font-weight: 700;
-            color: var(--text);
-            flex-shrink: 0;
-            border-radius: 0px;
-        }
-        .sd-user {
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .sd-handle {
-            font-size: 0.6rem;
             color: var(--text-muted);
+            margin-top: 2px;
         }
 
+        /* Toggle Switch */
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: var(--border);
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.25s;
+            flex-shrink: 0;
+            border: none;
+            padding: 0;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.25s, background 0.25s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+        .toggle-switch.on {
+            background: var(--accent);
+        }
+        .toggle-switch.on::after {
+            transform: translateX(20px);
+            background: #fff;
+        }
+        .toggle-switch .toggle-label {
+            display: none;
+        }
+
+        /* Inputs */
         .sd-input {
             width: 100%;
-            padding: 6px 10px;
+            padding: 8px 12px;
             border: 1px solid var(--border);
             background: var(--bg);
             color: var(--text);
-            font-size: 0.75rem;
-            font-family: var(--font);
+            font-size: 0.8rem;
+            border-radius: var(--radius);
             transition: border var(--transition);
             outline: none;
-            border-radius: 0px;
+            font-family: var(--font);
         }
         .sd-input:focus {
-            border-color: var(--text);
-        }
-        .sd-input::placeholder {
-            color: var(--text-muted);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
         .sd-range-wrap {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
         .sd-range {
             flex: 1;
             -webkit-appearance: none;
             appearance: none;
-            height: 2px;
-            border-radius: 0px;
+            height: 4px;
+            border-radius: 4px;
             background: var(--border);
             outline: none;
             transition: background 0.2s;
@@ -464,27 +401,28 @@
         .sd-range::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 14px;
-            height: 14px;
-            border-radius: 0px;
-            background: var(--text);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
             cursor: pointer;
-            border: none;
+            border: 2px solid var(--surface);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
             transition: transform 0.15s;
         }
         .sd-range::-webkit-slider-thumb:hover {
             transform: scale(1.1);
         }
         .sd-range::-moz-range-thumb {
-            width: 14px;
-            height: 14px;
-            border-radius: 0px;
-            background: var(--text);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
             cursor: pointer;
-            border: none;
+            border: 2px solid var(--surface);
         }
         .sd-range-val {
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             font-weight: 600;
             min-width: 28px;
             text-align: center;
@@ -492,39 +430,88 @@
             font-variant-numeric: tabular-nums;
         }
 
-        .sd-footer {
-            margin-top: 14px;
-            padding-top: 12px;
+        /* File upload for background */
+        .bg-upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.25s, background 0.25s;
+            background: var(--surface2);
+            margin-top: 4px;
+        }
+        .bg-upload-area:hover {
+            border-color: var(--accent);
+            background: var(--accent-bg);
+        }
+        .bg-upload-area input[type="file"] {
+            display: none;
+        }
+        .bg-upload-area .upload-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .bg-preview {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .bg-preview img {
+            max-height: 60px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            object-fit: cover;
+        }
+        .bg-preview .remove-bg {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            border: 1px solid var(--border);
+            padding: 2px 10px;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+        .bg-preview .remove-bg:hover {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        /* Footer */
+        .settings-footer {
             border-top: 1px solid var(--border);
+            padding: 16px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
+            flex-shrink: 0;
+            background: var(--surface);
         }
-        .sd-footer .ver {
-            font-size: 0.55rem;
-            color: var(--text-muted);
-            letter-spacing: 0.04em;
-        }
-        .sd-footer .reset-btn {
+        .settings-footer .ver {
             font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+        .settings-footer .reset-btn {
+            font-size: 0.65rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.06em;
             color: var(--text);
             cursor: pointer;
             background: none;
-            border: none;
-            padding: 4px 8px;
-            transition: background 0.2s;
-            font-family: var(--font);
             border: 1px solid var(--border);
+            padding: 6px 16px;
+            border-radius: var(--radius);
+            transition: all 0.2s;
+            font-family: var(--font);
             background: var(--surface2);
         }
-        .sd-footer .reset-btn:hover {
-            background: var(--active-bg);
-            border-color: var(--text);
+        .settings-footer .reset-btn:hover {
+            background: var(--accent-bg);
+            border-color: var(--accent);
         }
 
         /* ─── LAYOUT ─── */
@@ -532,18 +519,20 @@
             display: flex;
             flex: 1;
             overflow: hidden;
+            position: relative;
+            z-index: 1;
         }
 
         /* ─── SIDEBAR ─── */
         .sidebar {
-            width: 260px;
+            width: var(--sidebar-w);
             background: var(--surface);
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
             overflow-y: auto;
             flex-shrink: 0;
-            transition: width 0.3s ease, opacity 0.25s ease, background var(--transition), border var(--transition);
+            transition: width 0.3s ease, opacity 0.3s ease, background var(--transition), border var(--transition);
             opacity: 1;
         }
         .sidebar.collapsed {
@@ -555,57 +544,50 @@
         .sidebar::-webkit-scrollbar {
             width: 3px;
         }
-        .sidebar::-webkit-scrollbar-thumb {
-            background: var(--border);
-        }
 
         #navPanel {
-            padding: 6px 0 16px;
+            padding: 8px 0 20px;
             flex: 1;
         }
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 7px 16px;
+            gap: 10px;
+            padding: 8px 18px;
             cursor: pointer;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 500;
             color: var(--text);
-            transition: background 0.12s, color 0.12s;
+            transition: background 0.15s, color 0.15s;
             user-select: none;
-            border-left: 2px solid transparent;
-            letter-spacing: 0.02em;
+            border-left: 3px solid transparent;
+            letter-spacing: 0.01em;
         }
         .nav-item:hover {
             background: var(--surface2);
         }
         .nav-item.active {
-            background: var(--active-bg);
-            border-left-color: var(--text);
+            background: var(--accent-bg);
+            border-left-color: var(--accent);
+            color: var(--accent);
             font-weight: 600;
         }
-        .nav-item .nav-us {
-            font-size: 0.45rem;
-            letter-spacing: 0.2em;
-            color: var(--text-muted);
-            font-weight: 300;
-            opacity: 0.4;
-            display: inline-block;
-            width: 20px;
+        .nav-item .nav-icon {
+            font-size: 1rem;
+            width: 22px;
             text-align: center;
         }
 
         .cat-header {
             display: flex;
             align-items: center;
-            padding: 8px 16px 4px;
+            padding: 8px 18px 4px;
             cursor: pointer;
-            font-size: 0.55rem;
+            font-size: 0.6rem;
             font-weight: 700;
-            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
             user-select: none;
             transition: color 0.2s;
         }
@@ -614,11 +596,9 @@
         }
         .cat-chev {
             margin-left: auto;
-            font-size: 0.5rem;
+            font-size: 0.6rem;
             transition: transform 0.25s;
-            opacity: 0.4;
-            font-weight: 300;
-            letter-spacing: 0.1em;
+            opacity: 0.5;
         }
         .cat-header.open .cat-chev {
             transform: rotate(90deg);
@@ -631,52 +611,50 @@
             display: block;
         }
         .cat-sub .nav-item {
-            padding-left: 34px;
-            font-size: 0.7rem;
+            padding-left: 40px;
+            font-size: 0.75rem;
             font-weight: 400;
         }
 
         .sidebar-divider {
             height: 1px;
             background: var(--border);
-            margin: 4px 12px;
+            margin: 4px 16px;
         }
 
         /* ─── MAIN ─── */
         .main {
             flex: 1;
             overflow-y: auto;
-            padding: 18px 20px;
+            padding: 24px 28px;
             background: var(--bg);
             transition: background var(--transition), padding var(--transition);
+            position: relative;
+            z-index: 1;
         }
         .main.compact {
-            padding: 12px 14px;
+            padding: 14px 18px;
         }
         .main::-webkit-scrollbar {
-            width: 4px;
-        }
-        .main::-webkit-scrollbar-thumb {
-            background: var(--border);
+            width: 5px;
         }
 
         /* ─── README ─── */
         .readme-wrap {
-            max-width: 780px;
+            max-width: 820px;
             margin: 0 auto;
         }
         .readme-head {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 14px;
-            padding-bottom: 10px;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border);
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 600;
             transition: opacity 0.3s, height 0.3s, margin 0.3s, padding 0.3s;
             overflow: hidden;
-            letter-spacing: 0.02em;
         }
         .readme-head.hidden {
             opacity: 0;
@@ -686,24 +664,20 @@
             border-bottom: none;
             pointer-events: none;
         }
-        .readme-head .rh-us {
-            font-size: 0.5rem;
-            letter-spacing: 0.2em;
-            color: var(--text-muted);
-            opacity: 0.3;
-            font-weight: 300;
+        .readme-head .rh-icon {
+            font-size: 1.2rem;
         }
         .readme-head .rh-name {
             color: var(--text);
         }
         .readme-head .rh-badge {
-            font-size: 0.5rem;
+            font-size: 0.55rem;
             font-weight: 400;
             color: var(--text-muted);
             border: 1px solid var(--border);
-            padding: 0 6px;
+            padding: 0 8px;
+            border-radius: 12px;
             background: var(--surface2);
-            letter-spacing: 0.04em;
         }
 
         .readme-body {
@@ -713,20 +687,18 @@
             transition: font-size 0.2s;
         }
         .readme-body h1 {
-            font-size: 1.7rem;
+            font-size: 1.8rem;
             font-weight: 700;
             margin: 0 0 12px;
-            padding-bottom: 8px;
+            padding-bottom: 10px;
             border-bottom: 1px solid var(--border);
-            letter-spacing: -0.02em;
         }
         .readme-body h2 {
             font-size: 1.3rem;
             font-weight: 600;
-            margin: 22px 0 10px;
+            margin: 24px 0 10px;
             padding-bottom: 6px;
             border-bottom: 1px solid var(--border);
-            letter-spacing: -0.01em;
         }
         .readme-body h3 {
             font-size: 1.05rem;
@@ -738,37 +710,36 @@
             margin-bottom: 14px;
         }
         .readme-body a {
-            color: var(--text);
-            text-decoration: underline;
-            text-underline-offset: 2px;
-            text-decoration-thickness: 1px;
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
         }
         .readme-body a:hover {
-            text-decoration-thickness: 2px;
+            border-bottom-color: var(--accent);
         }
         .readme-body code {
             background: var(--surface2);
             border: 1px solid var(--border);
-            padding: 1px 6px;
+            padding: 1px 7px;
             font-size: 0.85em;
-            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            font-family: 'SF Mono', 'Cascadia Code', monospace;
+            border-radius: 4px;
             color: var(--text);
-            border-radius: 0px;
         }
         .readme-body pre {
             background: var(--surface);
             border: 1px solid var(--border);
-            padding: 14px 16px;
+            padding: 16px 18px;
             overflow-x: auto;
             margin-bottom: 16px;
-            border-radius: 0px;
+            border-radius: var(--radius);
         }
         .readme-body pre code {
             background: none;
             border: none;
             padding: 0;
             font-size: 0.85rem;
-            color: var(--text);
         }
         .readme-body ul,
         .readme-body ol {
@@ -780,7 +751,7 @@
             margin-bottom: 4px;
         }
         .readme-body blockquote {
-            border-left: 2px solid var(--border);
+            border-left: 3px solid var(--border);
             padding-left: 16px;
             color: var(--text-muted);
             margin: 0 0 14px;
@@ -788,8 +759,8 @@
         }
         .readme-body img {
             max-width: 100%;
+            border-radius: var(--radius);
             border: 1px solid var(--border);
-            border-radius: 0px;
         }
         .readme-body table {
             width: 100%;
@@ -821,45 +792,46 @@
         .src-head {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 14px;
+            gap: 12px;
+            margin-bottom: 16px;
             flex-wrap: wrap;
         }
         .src-head h2 {
-            font-size: 1rem;
+            font-size: 1.05rem;
             font-weight: 600;
             letter-spacing: -0.01em;
         }
         .src-count {
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             color: var(--text-muted);
             border: 1px solid var(--border);
-            padding: 1px 10px;
+            padding: 2px 12px;
+            border-radius: 20px;
             background: var(--surface2);
             font-weight: 500;
-            letter-spacing: 0.04em;
         }
         .src-search {
             margin-left: auto;
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             background: var(--bg);
             border: 1px solid var(--border);
-            padding: 0 10px;
-            transition: border var(--transition);
-            border-radius: 0px;
-            flex: 1 1 140px;
-            max-width: 220px;
+            padding: 0 12px;
+            border-radius: var(--radius);
+            transition: border var(--transition), box-shadow var(--transition);
+            flex: 1 1 160px;
+            max-width: 240px;
         }
         .src-search:focus-within {
-            border-color: var(--text);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
         }
         .src-search input {
             border: none;
             background: transparent;
-            padding: 6px 0;
-            font-size: 0.7rem;
+            padding: 8px 0;
+            font-size: 0.75rem;
             color: var(--text);
             outline: none;
             width: 100%;
@@ -867,14 +839,11 @@
         }
         .src-search input::placeholder {
             color: var(--text-muted);
-            letter-spacing: 0.04em;
+            letter-spacing: 0.03em;
         }
-        .src-search .srch-us {
-            font-size: 0.45rem;
-            letter-spacing: 0.15em;
+        .src-search .srch-icon {
             color: var(--text-muted);
-            opacity: 0.3;
-            font-weight: 300;
+            font-size: 0.8rem;
         }
 
         .src-sort {
@@ -885,71 +854,68 @@
         .src-sort .sort-btn {
             background: var(--surface2);
             border: 1px solid var(--border);
-            padding: 4px 10px;
-            font-size: 0.55rem;
+            padding: 4px 12px;
+            font-size: 0.6rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.05em;
             color: var(--text-muted);
             cursor: pointer;
+            border-radius: 20px;
             transition: all 0.15s;
             font-family: var(--font);
-            border-radius: 0px;
         }
         .src-sort .sort-btn:hover {
-            background: var(--active-bg);
+            background: var(--accent-bg);
             color: var(--text);
-            border-color: var(--text);
+            border-color: var(--accent);
         }
         .src-sort .sort-btn.active {
-            background: var(--text);
-            color: var(--bg);
-            border-color: var(--text);
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
         }
 
         .src-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
+            gap: 14px;
         }
         .src-card {
             border: 1px solid var(--border);
             background: var(--surface);
-            padding: 12px 14px;
+            padding: 14px 16px;
+            border-radius: var(--radius);
             transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
             cursor: default;
-            border-radius: 0px;
         }
         .src-card:hover {
-            border-color: var(--text);
-            transform: translateY(-1px);
+            border-color: var(--accent);
+            transform: translateY(-2px);
             box-shadow: var(--shadow);
         }
         .card-name {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 600;
             margin-bottom: 2px;
             word-break: break-all;
-            letter-spacing: 0.01em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .card-name .card-us {
-            font-size: 0.45rem;
-            letter-spacing: 0.15em;
-            color: var(--text-muted);
-            opacity: 0.25;
-            font-weight: 300;
-            margin-right: 4px;
+        .card-name .file-icon {
+            font-size: 1rem;
         }
         .card-size {
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             color: var(--text-muted);
         }
         .card-foot {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 10px;
-            padding-top: 8px;
+            margin-top: 12px;
+            padding-top: 10px;
             border-top: 1px solid var(--border);
         }
         .file-tag {
@@ -959,53 +925,52 @@
             letter-spacing: 0.06em;
             color: var(--text-muted);
             border: 1px solid var(--border);
-            padding: 0 6px;
+            padding: 0 8px;
+            border-radius: 12px;
             background: var(--surface2);
         }
         .dl-btn {
-            font-size: 0.55rem;
+            font-size: 0.6rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--text);
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            padding: 3px 12px;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            background: var(--accent-bg);
+            border: 1px solid var(--accent);
+            padding: 3px 14px;
+            border-radius: 20px;
             cursor: pointer;
             text-decoration: none;
             transition: all 0.15s;
             font-family: var(--font);
-            border-radius: 0px;
         }
         .dl-btn:hover {
-            background: var(--text);
-            color: var(--bg);
-            border-color: var(--text);
+            background: var(--accent);
+            color: #fff;
         }
         .src-empty {
             color: var(--text-muted);
-            font-size: 0.75rem;
-            padding: 24px 0;
+            font-size: 0.8rem;
+            padding: 30px 0;
             text-align: center;
             grid-column: 1 / -1;
-            letter-spacing: 0.04em;
+            letter-spacing: 0.03em;
         }
 
         .loading {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             color: var(--text-muted);
-            font-size: 0.7rem;
-            padding: 20px 0;
-            letter-spacing: 0.04em;
+            font-size: 0.75rem;
+            padding: 24px 0;
         }
         .spin {
-            width: 14px;
-            height: 14px;
-            border: 1.5px solid var(--border);
-            border-top-color: var(--text);
-            border-radius: 0px;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
             animation: spin 0.7s linear infinite;
             flex-shrink: 0;
         }
@@ -1019,13 +984,12 @@
         .breadcrumb {
             display: flex;
             align-items: center;
-            gap: 5px;
-            font-size: 0.65rem;
+            gap: 6px;
+            font-size: 0.7rem;
             color: var(--text-muted);
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             flex-wrap: wrap;
-            padding: 2px 0;
-            letter-spacing: 0.02em;
+            padding: 4px 0;
         }
         .breadcrumb .crumb {
             color: var(--text);
@@ -1035,44 +999,36 @@
             border-bottom: 1px solid transparent;
         }
         .breadcrumb .crumb:hover {
-            border-bottom-color: var(--text);
+            border-bottom-color: var(--accent);
+            color: var(--accent);
         }
         .breadcrumb .sep {
             color: var(--border);
             font-weight: 300;
-            font-size: 0.5rem;
         }
         .breadcrumb .current {
             color: var(--text-muted);
             font-weight: 400;
         }
-        .breadcrumb .bc-us {
-            font-size: 0.4rem;
-            letter-spacing: 0.2em;
-            color: var(--text-muted);
-            opacity: 0.2;
-            font-weight: 300;
-        }
 
         /* ─── TOAST ─── */
         .toast {
             position: fixed;
-            bottom: 24px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%) translateY(80px);
             background: var(--surface);
             border: 1px solid var(--border);
-            padding: 10px 20px;
-            font-size: 0.7rem;
+            padding: 12px 24px;
+            font-size: 0.75rem;
             color: var(--text);
             box-shadow: var(--shadow);
+            border-radius: var(--radius);
             opacity: 0;
             transition: opacity 0.35s, transform 0.35s;
             z-index: 200;
             pointer-events: none;
             font-weight: 500;
-            letter-spacing: 0.04em;
-            border-radius: 0px;
             max-width: calc(100vw - 32px);
             text-align: center;
         }
@@ -1080,60 +1036,39 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
-        .toast .toast-us {
-            font-size: 0.45rem;
-            letter-spacing: 0.2em;
-            color: var(--text-muted);
-            opacity: 0.3;
-            font-weight: 300;
-            margin-right: 6px;
-        }
 
         /* ─── RESPONSIVE ─── */
         @media (max-width: 768px) {
-            .sidebar {
-                width: 220px;
+            :root {
+                --sidebar-w: 220px;
             }
             .main {
-                padding: 14px 14px;
+                padding: 16px 16px;
             }
-            .settings-dropdown {
-                width: min(300px, calc(100vw - 16px));
-                right: 6px;
-                padding: 14px 12px;
+            .settings-drawer {
+                width: min(380px, 94vw);
             }
             .src-grid {
                 grid-template-columns: 1fr 1fr;
             }
             .src-search {
                 max-width: 160px;
-                flex: 1 1 100px;
+                flex: 1 1 120px;
             }
             .readme-wrap {
                 max-width: 100%;
             }
-            .src-head h2 {
-                font-size: 0.9rem;
-            }
             header {
-                padding: 0 10px;
-                height: 50px;
+                padding: 0 14px;
+                height: 54px;
             }
             .site-name {
-                font-size: 0.9rem;
-            }
-            .wip-badge {
-                font-size: 0.5rem;
-                padding: 0 6px;
+                font-size: 1rem;
             }
             .header-btn {
-                padding: 0 10px;
-                font-size: 0.55rem;
-                height: 32px;
-            }
-            .menu-btn {
-                width: 32px;
-                height: 32px;
+                padding: 0 12px;
+                font-size: 0.6rem;
+                height: 34px;
             }
         }
 
@@ -1142,7 +1077,7 @@
                 grid-template-columns: 1fr;
             }
             .main {
-                padding: 10px 10px;
+                padding: 12px 10px;
             }
             .sidebar {
                 width: 190px;
@@ -1150,7 +1085,7 @@
             .src-head {
                 flex-direction: column;
                 align-items: stretch;
-                gap: 6px;
+                gap: 8px;
             }
             .src-search {
                 max-width: 100%;
@@ -1159,14 +1094,19 @@
             .src-sort {
                 justify-content: flex-start;
             }
-            .settings-dropdown {
-                width: calc(100vw - 12px);
-                right: 4px;
-                top: 54px;
-                padding: 12px 10px;
+            .settings-drawer {
+                width: 100vw;
+                max-width: 100vw;
+                right: -100vw;
             }
-            .header-right .header-btn .us {
-                max-width: 40px;
+            .settings-drawer.open {
+                right: 0;
+            }
+            .settings-scroll {
+                padding: 12px 16px;
+            }
+            .settings-footer {
+                padding: 12px 16px;
             }
             .readme-body {
                 font-size: calc(var(--readme-size, 15px) * 0.95);
@@ -1178,84 +1118,31 @@
                 font-size: 1.1rem;
             }
             .toast {
-                font-size: 0.6rem;
-                padding: 8px 14px;
+                font-size: 0.65rem;
+                padding: 10px 16px;
                 bottom: 16px;
             }
         }
 
         @media (max-width: 380px) {
             .header-btn {
-                padding: 0 6px;
-                font-size: 0.5rem;
-            }
-            .header-btn .us {
-                max-width: 30px;
+                padding: 0 8px;
+                font-size: 0.55rem;
             }
             .site-name {
-                font-size: 0.8rem;
+                font-size: 0.85rem;
             }
             .wip-badge {
                 font-size: 0.45rem;
+                padding: 0 6px;
             }
-            .settings-dropdown {
-                padding: 10px 8px;
-            }
-            .sd-group {
-                margin-bottom: 10px;
-            }
-        }
-
-        /* ─── UTILITY ─── */
-        .hidden {
-            display: none !important;
-        }
-        .text-center {
-            text-align: center;
-        }
-        .w-full {
-            width: 100%;
-        }
-        .gap-1 {
-            gap: 4px;
-        }
-        .flex {
-            display: flex;
-        }
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .mt-1 {
-            margin-top: 6px;
-        }
-        .mb-1 {
-            margin-bottom: 6px;
-        }
-
-        /* ─── 33-UNDERSCORE CONSTANT ─── */
-        .uscore-33 {
-            display: block;
-            font-size: 0.45rem;
-            letter-spacing: 0.1em;
-            color: var(--text-muted);
-            opacity: 0.2;
-            font-weight: 300;
-            line-height: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-        }
-        .uscore-33::before {
-            content: '_________________________________';
-            /* 33 underscores */
-            display: inline-block;
         }
     </style>
 </head>
 <body>
+
+    <!-- ─── BACKGROUND OVERLAY ─── -->
+    <div class="bg-overlay" id="bgOverlay"></div>
 
     <!-- ─── HEADER ─── -->
     <header>
@@ -1267,112 +1154,148 @@
             <span class="wip-badge">wip</span>
         </div>
         <div class="header-right">
-            <button class="header-btn" id="settingsBtn" onclick="toggleSettings()">
-                <span class="us">_________</span>
-                <span>set</span>
+            <button class="header-btn" id="settingsBtn" onclick="openSettings()">
+                <span class="us">⚙️</span> settings
             </button>
         </div>
+    </header>
 
-        <!-- SETTINGS DROPDOWN -->
-        <div class="settings-dropdown" id="settingsDropdown">
-            <div class="sd-title">
-                <span>settings</span>
-                <span class="us">____________________</span>
-            </div>
-
-            <!-- User -->
-            <div class="sd-group">
-                <div class="sd-avatar-row">
-                    <div class="sd-avatar">M</div>
+    <!-- ─── SETTINGS DRAWER ─── -->
+    <div class="settings-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
+    <div class="settings-drawer" id="settingsDrawer">
+        <div class="drawer-header">
+            <h2>Settings</h2>
+            <button class="close-btn" onclick="closeSettings()">✕</button>
+        </div>
+        <div class="settings-scroll">
+            <!-- User info -->
+            <div class="setting-group">
+                <div class="group-label">Profile</div>
+                <div style="display:flex;align-items:center;gap:12px;padding:6px 0;">
+                    <div style="width:40px;height:40px;border-radius:50%;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent);border:1px solid var(--border);">M</div>
                     <div>
-                        <div class="sd-user">Myokyuu</div>
-                        <div class="sd-handle">@vyhuynh24092021-debug</div>
+                        <div style="font-weight:600;font-size:0.9rem;">Myokyuu</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);">@vyhuynh24092021-debug</div>
                     </div>
                 </div>
             </div>
 
-            <div class="sd-divider"></div>
+            <div style="height:1px;background:var(--border);margin:8px 0 16px;"></div>
 
-            <!-- 1. Dark mode -->
-            <div class="sd-group">
-                <div class="toggle-row">
-                    <span>dark mode</span>
-                    <button class="btn-underscore small" id="themeToggle" onclick="toggleTheme()">
-                        <span class="label">off</span>
-                        <span class="uscore">_________________________________</span>
-                    </button>
+            <!-- Theme -->
+            <div class="setting-group">
+                <div class="group-label">Appearance</div>
+                <div class="setting-row">
+                    <span class="label">Dark mode</span>
+                    <button class="toggle-switch" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle dark mode"></button>
                 </div>
             </div>
 
-            <!-- 2. Sidebar visibility -->
-            <div class="sd-group">
-                <div class="toggle-row">
-                    <span>show sidebar</span>
-                    <button class="btn-underscore small toggle-on" id="sidebarToggle" onclick="toggleSidebarSetting()">
-                        <span class="label">on</span>
-                        <span class="uscore">_________________________________</span>
-                    </button>
+            <!-- Sidebar -->
+            <div class="setting-group">
+                <div class="setting-row">
+                    <span class="label">Show sidebar</span>
+                    <button class="toggle-switch on" id="sidebarToggle" onclick="toggleSidebarSetting()" aria-label="Toggle sidebar"></button>
                 </div>
-                <div class="sd-desc">hide or show the navigation sidebar</div>
+                <div class="desc">Hide or show the navigation sidebar</div>
             </div>
 
-            <!-- 3. README header visibility -->
-            <div class="sd-group">
-                <div class="toggle-row">
-                    <span>show readme header</span>
-                    <button class="btn-underscore small toggle-on" id="readmeHeaderToggle" onclick="toggleReadmeHeader()">
-                        <span class="label">on</span>
-                        <span class="uscore">_________________________________</span>
-                    </button>
+            <!-- README header -->
+            <div class="setting-group">
+                <div class="setting-row">
+                    <span class="label">Show README header</span>
+                    <button class="toggle-switch on" id="readmeHeaderToggle" onclick="toggleReadmeHeader()" aria-label="Toggle README header"></button>
                 </div>
-                <div class="sd-desc">hide the title while keeping content</div>
+                <div class="desc">Hide the title while keeping content</div>
             </div>
 
-            <!-- 4. README custom name -->
-            <div class="sd-group">
-                <div class="sd-label">readme display name</div>
+            <!-- README name -->
+            <div class="setting-group">
+                <div class="group-label">README display name</div>
                 <input class="sd-input" id="readmeNameInput" type="text" placeholder="e.g. Overview, Docs, Home" value="README" />
-                <div class="sd-desc" style="margin-top:4px;">change what the header says</div>
+                <div class="desc" style="margin-top:4px;">Change what the header says</div>
             </div>
 
-            <div class="sd-divider"></div>
+            <div style="height:1px;background:var(--border);margin:12px 0 16px;"></div>
 
-            <!-- 5. Font size -->
-            <div class="sd-group">
-                <div class="sd-label">content font size</div>
+            <!-- Font size -->
+            <div class="setting-group">
+                <div class="group-label">Content font size</div>
                 <div class="sd-range-wrap">
                     <input class="sd-range" id="fontSizeRange" type="range" min="12" max="20" value="15" step="1" />
                     <span class="sd-range-val" id="fontSizeVal">15</span>
                 </div>
             </div>
 
-            <!-- 6. Compact mode -->
-            <div class="sd-group">
-                <div class="toggle-row">
-                    <span>compact mode</span>
-                    <button class="btn-underscore small toggle-off" id="compactToggle" onclick="toggleCompact()">
-                        <span class="label">off</span>
-                        <span class="uscore">_________________________________</span>
-                    </button>
+            <!-- Compact mode -->
+            <div class="setting-group">
+                <div class="setting-row">
+                    <span class="label">Compact mode</span>
+                    <button class="toggle-switch" id="compactToggle" onclick="toggleCompact()" aria-label="Toggle compact mode"></button>
                 </div>
-                <div class="sd-desc">reduce padding for a denser layout</div>
+                <div class="desc">Reduce padding for a denser layout</div>
             </div>
 
-            <div class="sd-divider"></div>
+            <div style="height:1px;background:var(--border);margin:12px 0 16px;"></div>
 
-            <!-- Footer -->
-            <div class="sd-footer">
-                <span class="ver">v1.2 · MerStor</span>
-                <button class="reset-btn" onclick="resetSettings()">reset all</button>
+            <!-- Background image upload -->
+            <div class="setting-group">
+                <div class="group-label">Custom background</div>
+                <div class="bg-upload-area" onclick="document.getElementById('bgInput').click()">
+                    <input type="file" id="bgInput" accept="image/*" />
+                    <div class="upload-label">Click to upload an image</div>
+                </div>
+                <div class="bg-preview" id="bgPreview" style="display:none;">
+                    <img id="bgPreviewImg" src="#" alt="preview" />
+                    <span class="remove-bg" onclick="removeBackground()">Remove</span>
+                </div>
+                <div style="margin-top:8px;">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+                        <span style="font-size:0.7rem;color:var(--text-muted);">Blur</span>
+                        <input class="sd-range" id="bgBlurRange" type="range" min="0" max="10" value="0" step="0.5" style="flex:1;" />
+                        <span class="sd-range-val" id="bgBlurVal">0</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+                        <span style="font-size:0.7rem;color:var(--text-muted);">Brightness</span>
+                        <input class="sd-range" id="bgBrightnessRange" type="range" min="0.5" max="1.5" value="1" step="0.05" style="flex:1;" />
+                        <span class="sd-range-val" id="bgBrightnessVal">1.0</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <span style="font-size:0.7rem;color:var(--text-muted);">Opacity</span>
+                        <input class="sd-range" id="bgOpacityRange" type="range" min="0.1" max="1" value="0.6" step="0.05" style="flex:1;" />
+                        <span class="sd-range-val" id="bgOpacityVal">0.6</span>
+                    </div>
+                </div>
             </div>
+
+            <div style="height:1px;background:var(--border);margin:12px 0 16px;"></div>
+
+            <!-- Additional toggles (extra features) -->
+            <div class="setting-group">
+                <div class="group-label">File display</div>
+                <div class="setting-row">
+                    <span class="label">Show file icons</span>
+                    <button class="toggle-switch on" id="fileIconsToggle" onclick="toggleFileIcons()" aria-label="Toggle file icons"></button>
+                </div>
+                <div class="setting-row">
+                    <span class="label">Show file sizes</span>
+                    <button class="toggle-switch on" id="fileSizesToggle" onclick="toggleFileSizes()" aria-label="Toggle file sizes"></button>
+                </div>
+                <div class="setting-row">
+                    <span class="label">Show file tags</span>
+                    <button class="toggle-switch on" id="fileTagsToggle" onclick="toggleFileTags()" aria-label="Toggle file tags"></button>
+                </div>
+            </div>
+
         </div>
-    </header>
+        <div class="settings-footer">
+            <span class="ver">v1.2 · MerStor</span>
+            <button class="reset-btn" onclick="resetSettings()">Reset all</button>
+        </div>
+    </div>
 
     <!-- ─── TOAST ─── -->
-    <div class="toast" id="toast">
-        <span class="toast-us">_________________________________</span>
-        <span class="toast-msg"></span>
-    </div>
+    <div class="toast" id="toast"><span id="toastMsg"></span></div>
 
     <!-- ─── LAYOUT ─── -->
     <div class="layout">
@@ -1380,14 +1303,13 @@
         <div class="sidebar" id="sidebar">
             <div id="navPanel">
                 <div class="nav-item active" id="nav-home" onclick="showReadme()">
-                    <span class="nav-us">_________</span>
-                    <span>readme</span>
+                    <span class="nav-icon">📄</span> <span>README</span>
                 </div>
                 <div class="sidebar-divider"></div>
                 <div id="navTree">
-                    <div class="loading" style="padding:14px">
+                    <div class="loading" style="padding:14px;">
                         <div class="spin"></div>
-                        <span>loading...</span>
+                        <span>Loading folders…</span>
                     </div>
                 </div>
             </div>
@@ -1398,14 +1320,14 @@
             <!-- README view -->
             <div id="view-readme" class="readme-wrap">
                 <div class="readme-head" id="readmeHead">
-                    <span class="rh-us">_________</span>
+                    <span class="rh-icon">📖</span>
                     <span class="rh-name" id="readmeHeadName">README</span>
                     <span class="rh-badge">.md</span>
                 </div>
                 <div class="readme-body" id="readmeBody">
                     <div class="loading">
                         <div class="spin"></div>
-                        <span>loading readme...</span>
+                        <span>Loading README…</span>
                     </div>
                 </div>
             </div>
@@ -1417,13 +1339,13 @@
                     <h2 id="src-title">Files</h2>
                     <span class="src-count" id="src-count"></span>
                     <div class="src-search">
-                        <span class="srch-us">______</span>
-                        <input type="text" id="srcSearchInput" placeholder="search files" oninput="filterFiles()" />
+                        <span class="srch-icon">🔍</span>
+                        <input type="text" id="srcSearchInput" placeholder="Search files" oninput="filterFiles()" />
                     </div>
                     <div class="src-sort">
-                        <button class="sort-btn active" data-sort="name" onclick="sortFiles('name')">name</button>
-                        <button class="sort-btn" data-sort="size" onclick="sortFiles('size')">size</button>
-                        <button class="sort-btn" data-sort="type" onclick="sortFiles('type')">type</button>
+                        <button class="sort-btn active" data-sort="name" onclick="sortFiles('name')">Name</button>
+                        <button class="sort-btn" data-sort="size" onclick="sortFiles('size')">Size</button>
+                        <button class="sort-btn" data-sort="type" onclick="sortFiles('type')">Type</button>
                     </div>
                 </div>
                 <div class="src-grid" id="src-grid"></div>
@@ -1443,6 +1365,13 @@
             fontSize: 15,
             compact: false,
             theme: 'light',
+            showFileIcons: true,
+            showFileSizes: true,
+            showFileTags: true,
+            bgImage: null,
+            bgBlur: 0,
+            bgBrightness: 1,
+            bgOpacity: 0.6,
         };
 
         // ━━━ STATE ━━━
@@ -1452,13 +1381,17 @@
         let filteredFiles = [];
         let currentSort = 'name';
         let sortAsc = true;
+        let fileIconsEnabled = true;
+        let fileSizesEnabled = true;
+        let fileTagsEnabled = true;
 
         // ━━━ DOM REFS ━━━
         const $ = id => document.getElementById(id);
         const sidebar = $('sidebar');
         const menuBtn = $('menuBtn');
         const settingsBtn = $('settingsBtn');
-        const settingsDropdown = $('settingsDropdown');
+        const settingsOverlay = $('settingsOverlay');
+        const settingsDrawer = $('settingsDrawer');
         const themeToggle = $('themeToggle');
         const sidebarToggle = $('sidebarToggle');
         const readmeHeaderToggle = $('readmeHeaderToggle');
@@ -1480,7 +1413,20 @@
         const navTree = $('navTree');
         const navHome = $('nav-home');
         const toast = $('toast');
-        const toastMsg = toast.querySelector('.toast-msg');
+        const toastMsg = $('toastMsg');
+        const bgOverlay = $('bgOverlay');
+        const bgInput = $('bgInput');
+        const bgPreview = $('bgPreview');
+        const bgPreviewImg = $('bgPreviewImg');
+        const bgBlurRange = $('bgBlurRange');
+        const bgBlurVal = $('bgBlurVal');
+        const bgBrightnessRange = $('bgBrightnessRange');
+        const bgBrightnessVal = $('bgBrightnessVal');
+        const bgOpacityRange = $('bgOpacityRange');
+        const bgOpacityVal = $('bgOpacityVal');
+        const fileIconsToggle = $('fileIconsToggle');
+        const fileSizesToggle = $('fileSizesToggle');
+        const fileTagsToggle = $('fileTagsToggle');
 
         let toastTimer = null;
 
@@ -1499,59 +1445,50 @@
             document.documentElement.setAttribute('data-theme', newTheme === 'dark' ? 'dark' : '');
             CONFIG.theme = newTheme;
             localStorage.setItem('merstor-theme', newTheme);
-            updateToggleBtn(themeToggle, newTheme === 'dark');
-            showToast(newTheme === 'dark' ? 'dark mode on' : 'light mode on');
+            updateToggle(themeToggle, newTheme === 'dark');
+            showToast(newTheme === 'dark' ? 'Dark mode on' : 'Light mode on');
         }
         // Init theme
         const savedTheme = localStorage.getItem('merstor-theme') || 'light';
         if (savedTheme === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
             CONFIG.theme = 'dark';
-            updateToggleBtn(themeToggle, true);
+            updateToggle(themeToggle, true);
         } else {
-            updateToggleBtn(themeToggle, false);
+            updateToggle(themeToggle, false);
         }
 
-        // ━━━ TOGGLE BUTTON HELPERS ━━━
-        function updateToggleBtn(btn, on) {
-            if (!btn) return;
-            const label = btn.querySelector('.label');
-            if (!label) return;
-            label.textContent = on ? 'on' : 'off';
-            btn.classList.toggle('toggle-on', on);
-            btn.classList.toggle('toggle-off', !on);
+        // ━━━ TOGGLE HELPERS ━━━
+        function updateToggle(el, on) {
+            if (!el) return;
+            el.classList.toggle('on', on);
         }
 
-        function getToggleState(btn) {
-            const label = btn?.querySelector('.label');
-            return label?.textContent === 'on';
+        function getToggleState(el) {
+            return el.classList.contains('on');
         }
 
-        // ━━━ SETTINGS UI ━━━
-        let settingsOpen = false;
-
-        function toggleSettings() {
-            settingsOpen = !settingsOpen;
-            settingsDropdown.classList.toggle('open', settingsOpen);
-            settingsBtn.classList.toggle('active', settingsOpen);
+        // ━━━ SETTINGS DRAWER ━━━
+        function openSettings() {
+            settingsOverlay.classList.add('open');
+            settingsDrawer.classList.add('open');
+            settingsBtn.classList.add('active');
         }
-        document.addEventListener('click', (e) => {
-            if (settingsOpen && !settingsDropdown.contains(e.target) && e.target !== settingsBtn && !settingsBtn
-                .contains(e.target)) {
-                settingsOpen = false;
-                settingsDropdown.classList.remove('open');
-                settingsBtn.classList.remove('active');
-            }
-        });
+
+        function closeSettings() {
+            settingsOverlay.classList.remove('open');
+            settingsDrawer.classList.remove('open');
+            settingsBtn.classList.remove('active');
+        }
 
         // ━━━ SIDEBAR ━━━
         function toggleSidebar() {
             const collapsed = sidebar.classList.toggle('collapsed');
             CONFIG.showSidebar = !collapsed;
             localStorage.setItem('merstor-sidebar', CONFIG.showSidebar ? '1' : '0');
-            updateToggleBtn(sidebarToggle, CONFIG.showSidebar);
+            updateToggle(sidebarToggle, CONFIG.showSidebar);
             menuBtn.classList.toggle('active', collapsed);
-            showToast(collapsed ? 'sidebar hidden' : 'sidebar shown');
+            showToast(collapsed ? 'Sidebar hidden' : 'Sidebar shown');
         }
 
         function toggleSidebarSetting() {
@@ -1559,9 +1496,9 @@
             CONFIG.showSidebar = on;
             sidebar.classList.toggle('collapsed', !on);
             menuBtn.classList.toggle('active', !on);
-            updateToggleBtn(sidebarToggle, on);
+            updateToggle(sidebarToggle, on);
             localStorage.setItem('merstor-sidebar', on ? '1' : '0');
-            showToast(on ? 'sidebar shown' : 'sidebar hidden');
+            showToast(on ? 'Sidebar shown' : 'Sidebar hidden');
         }
         // Init sidebar
         const savedSidebar = localStorage.getItem('merstor-sidebar');
@@ -1569,9 +1506,9 @@
             sidebar.classList.add('collapsed');
             menuBtn.classList.add('active');
             CONFIG.showSidebar = false;
-            updateToggleBtn(sidebarToggle, false);
+            updateToggle(sidebarToggle, false);
         } else {
-            updateToggleBtn(sidebarToggle, true);
+            updateToggle(sidebarToggle, true);
         }
 
         // ━━━ README HEADER ━━━
@@ -1579,17 +1516,17 @@
             const on = !getToggleState(readmeHeaderToggle);
             CONFIG.showReadmeHeader = on;
             readmeHead.classList.toggle('hidden', !on);
-            updateToggleBtn(readmeHeaderToggle, on);
+            updateToggle(readmeHeaderToggle, on);
             localStorage.setItem('merstor-readme-header', on ? '1' : '0');
-            showToast(on ? 'readme header shown' : 'readme header hidden');
+            showToast(on ? 'README header shown' : 'README header hidden');
         }
         const savedHeader = localStorage.getItem('merstor-readme-header');
         if (savedHeader === '0') {
             readmeHead.classList.add('hidden');
             CONFIG.showReadmeHeader = false;
-            updateToggleBtn(readmeHeaderToggle, false);
+            updateToggle(readmeHeaderToggle, false);
         } else {
-            updateToggleBtn(readmeHeaderToggle, true);
+            updateToggle(readmeHeaderToggle, true);
         }
 
         // ━━━ README NAME ━━━
@@ -1598,18 +1535,16 @@
             CONFIG.readmeName = val;
             readmeHeadName.textContent = val;
             localStorage.setItem('merstor-readme-name', val);
-            const homeLabel = navHome;
-            const span = homeLabel.querySelector('span:last-child');
-            if (span) span.textContent = val.toLowerCase();
+            const homeLabel = navHome.querySelector('span:last-child');
+            if (homeLabel) homeLabel.textContent = val;
         });
         const savedName = localStorage.getItem('merstor-readme-name');
         if (savedName) {
             CONFIG.readmeName = savedName;
             readmeNameInput.value = savedName;
             readmeHeadName.textContent = savedName;
-            const homeLabel = navHome;
-            const span = homeLabel.querySelector('span:last-child');
-            if (span) span.textContent = savedName.toLowerCase();
+            const homeLabel = navHome.querySelector('span:last-child');
+            if (homeLabel) homeLabel.textContent = savedName;
         }
 
         // ━━━ FONT SIZE ━━━
@@ -1636,17 +1571,139 @@
             const on = !getToggleState(compactToggle);
             CONFIG.compact = on;
             mainContent.classList.toggle('compact', on);
-            updateToggleBtn(compactToggle, on);
+            updateToggle(compactToggle, on);
             localStorage.setItem('merstor-compact', on ? '1' : '0');
-            showToast(on ? 'compact mode on' : 'compact mode off');
+            showToast(on ? 'Compact mode on' : 'Compact mode off');
         }
         const savedCompact = localStorage.getItem('merstor-compact');
         if (savedCompact === '1') {
             mainContent.classList.add('compact');
             CONFIG.compact = true;
-            updateToggleBtn(compactToggle, true);
+            updateToggle(compactToggle, true);
         } else {
-            updateToggleBtn(compactToggle, false);
+            updateToggle(compactToggle, false);
+        }
+
+        // ━━━ FILE ICONS, SIZES, TAGS ━━━
+        function toggleFileIcons() {
+            fileIconsEnabled = !getToggleState(fileIconsToggle);
+            updateToggle(fileIconsToggle, fileIconsEnabled);
+            CONFIG.showFileIcons = fileIconsEnabled;
+            localStorage.setItem('merstor-file-icons', fileIconsEnabled ? '1' : '0');
+            if (viewSrc.style.display !== 'none') renderFiles(filteredFiles.length ? filteredFiles : allFiles);
+            showToast(fileIconsEnabled ? 'File icons on' : 'File icons off');
+        }
+
+        function toggleFileSizes() {
+            fileSizesEnabled = !getToggleState(fileSizesToggle);
+            updateToggle(fileSizesToggle, fileSizesEnabled);
+            CONFIG.showFileSizes = fileSizesEnabled;
+            localStorage.setItem('merstor-file-sizes', fileSizesEnabled ? '1' : '0');
+            if (viewSrc.style.display !== 'none') renderFiles(filteredFiles.length ? filteredFiles : allFiles);
+            showToast(fileSizesEnabled ? 'File sizes on' : 'File sizes off');
+        }
+
+        function toggleFileTags() {
+            fileTagsEnabled = !getToggleState(fileTagsToggle);
+            updateToggle(fileTagsToggle, fileTagsEnabled);
+            CONFIG.showFileTags = fileTagsEnabled;
+            localStorage.setItem('merstor-file-tags', fileTagsEnabled ? '1' : '0');
+            if (viewSrc.style.display !== 'none') renderFiles(filteredFiles.length ? filteredFiles : allFiles);
+            showToast(fileTagsEnabled ? 'File tags on' : 'File tags off');
+        }
+
+        // Init file display toggles
+        const savedIcons = localStorage.getItem('merstor-file-icons');
+        if (savedIcons === '0') {
+            fileIconsEnabled = false;
+            updateToggle(fileIconsToggle, false);
+        } else {
+            updateToggle(fileIconsToggle, true);
+        }
+        const savedSizes = localStorage.getItem('merstor-file-sizes');
+        if (savedSizes === '0') {
+            fileSizesEnabled = false;
+            updateToggle(fileSizesToggle, false);
+        } else {
+            updateToggle(fileSizesToggle, true);
+        }
+        const savedTags = localStorage.getItem('merstor-file-tags');
+        if (savedTags === '0') {
+            fileTagsEnabled = false;
+            updateToggle(fileTagsToggle, false);
+        } else {
+            updateToggle(fileTagsToggle, true);
+        }
+
+        // ━━━ BACKGROUND IMAGE ━━━
+        bgInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const dataUrl = ev.target.result;
+                CONFIG.bgImage = dataUrl;
+                bgOverlay.style.setProperty('--bg-image', `url(${dataUrl})`);
+                bgOverlay.classList.add('active');
+                bgPreviewImg.src = dataUrl;
+                bgPreview.style.display = 'flex';
+                localStorage.setItem('merstor-bg-image', dataUrl);
+                showToast('Background image uploaded');
+                applyBgSettings();
+            };
+            reader.readAsDataURL(file);
+        });
+
+        function applyBgSettings() {
+            const blur = parseFloat(bgBlurRange.value);
+            const brightness = parseFloat(bgBrightnessRange.value);
+            const opacity = parseFloat(bgOpacityRange.value);
+            bgBlurVal.textContent = blur;
+            bgBrightnessVal.textContent = brightness.toFixed(1);
+            bgOpacityVal.textContent = opacity.toFixed(2);
+            bgOverlay.style.setProperty('--bg-blur', blur + 'px');
+            bgOverlay.style.setProperty('--bg-brightness', brightness);
+            bgOverlay.style.setProperty('--bg-opacity', opacity);
+            CONFIG.bgBlur = blur;
+            CONFIG.bgBrightness = brightness;
+            CONFIG.bgOpacity = opacity;
+            localStorage.setItem('merstor-bg-blur', blur);
+            localStorage.setItem('merstor-bg-brightness', brightness);
+            localStorage.setItem('merstor-bg-opacity', opacity);
+        }
+
+        bgBlurRange.addEventListener('input', applyBgSettings);
+        bgBrightnessRange.addEventListener('input', applyBgSettings);
+        bgOpacityRange.addEventListener('input', applyBgSettings);
+
+        function removeBackground() {
+            CONFIG.bgImage = null;
+            bgOverlay.style.setProperty('--bg-image', 'none');
+            bgOverlay.classList.remove('active');
+            bgPreview.style.display = 'none';
+            bgInput.value = '';
+            localStorage.removeItem('merstor-bg-image');
+            localStorage.removeItem('merstor-bg-blur');
+            localStorage.removeItem('merstor-bg-brightness');
+            localStorage.removeItem('merstor-bg-opacity');
+            showToast('Background removed');
+        }
+
+        // Load saved background
+        const savedBg = localStorage.getItem('merstor-bg-image');
+        if (savedBg) {
+            CONFIG.bgImage = savedBg;
+            bgOverlay.style.setProperty('--bg-image', `url(${savedBg})`);
+            bgOverlay.classList.add('active');
+            bgPreviewImg.src = savedBg;
+            bgPreview.style.display = 'flex';
+            const savedBlur = parseFloat(localStorage.getItem('merstor-bg-blur')) || 0;
+            const savedBright = parseFloat(localStorage.getItem('merstor-bg-brightness')) || 1;
+            const savedOp = parseFloat(localStorage.getItem('merstor-bg-opacity')) || 0.6;
+            bgBlurRange.value = savedBlur;
+            bgBrightnessRange.value = savedBright;
+            bgOpacityRange.value = savedOp;
+            applyBgSettings();
         }
 
         // ━━━ RESET ━━━
@@ -1655,29 +1712,28 @@
             document.documentElement.setAttribute('data-theme', '');
             CONFIG.theme = 'light';
             localStorage.setItem('merstor-theme', 'light');
-            updateToggleBtn(themeToggle, false);
+            updateToggle(themeToggle, false);
 
             // Sidebar: show
             sidebar.classList.remove('collapsed');
             menuBtn.classList.remove('active');
             CONFIG.showSidebar = true;
             localStorage.setItem('merstor-sidebar', '1');
-            updateToggleBtn(sidebarToggle, true);
+            updateToggle(sidebarToggle, true);
 
             // README header: show
             readmeHead.classList.remove('hidden');
             CONFIG.showReadmeHeader = true;
             localStorage.setItem('merstor-readme-header', '1');
-            updateToggleBtn(readmeHeaderToggle, true);
+            updateToggle(readmeHeaderToggle, true);
 
             // README name: default
             readmeNameInput.value = 'README';
             CONFIG.readmeName = 'README';
             readmeHeadName.textContent = 'README';
             localStorage.setItem('merstor-readme-name', 'README');
-            const homeLabel = navHome;
-            const span = homeLabel.querySelector('span:last-child');
-            if (span) span.textContent = 'readme';
+            const homeLabel = navHome.querySelector('span:last-child');
+            if (homeLabel) homeLabel.textContent = 'README';
 
             // Font size: 15
             fontSizeRange.value = 15;
@@ -1690,18 +1746,30 @@
             mainContent.classList.remove('compact');
             CONFIG.compact = false;
             localStorage.setItem('merstor-compact', '0');
-            updateToggleBtn(compactToggle, false);
+            updateToggle(compactToggle, false);
+
+            // File icons: on
+            fileIconsEnabled = true;
+            updateToggle(fileIconsToggle, true);
+            localStorage.setItem('merstor-file-icons', '1');
+            fileSizesEnabled = true;
+            updateToggle(fileSizesToggle, true);
+            localStorage.setItem('merstor-file-sizes', '1');
+            fileTagsEnabled = true;
+            updateToggle(fileTagsToggle, true);
+            localStorage.setItem('merstor-file-tags', '1');
+
+            // Background: remove
+            removeBackground();
 
             // Close settings
-            settingsOpen = false;
-            settingsDropdown.classList.remove('open');
-            settingsBtn.classList.remove('active');
+            closeSettings();
 
             // Re-render files if visible
             if (viewSrc.style.display !== 'none') {
                 renderFiles(filteredFiles.length ? filteredFiles : allFiles);
             }
-            showToast('all settings reset');
+            showToast('All settings reset');
         }
 
         // ━━━ README ━━━
@@ -1720,7 +1788,7 @@
                 const html = marked.parse(text);
                 readmeBody.innerHTML = html;
             } catch {
-                readmeBody.innerHTML = '<p style="color:var(--text-muted);letter-spacing:0.04em;">could not load readme</p>';
+                readmeBody.innerHTML = '<p style="color:var(--text-muted);">Could not load README.</p>';
             }
         }
 
@@ -1736,7 +1804,7 @@
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             if (navEl) navEl.classList.add('active');
 
-            srcGrid.innerHTML = '<div class="loading"><div class="spin"></div><span>loading files...</span></div>';
+            srcGrid.innerHTML = '<div class="loading"><div class="spin"></div><span>Loading files…</span></div>';
             srcCount.textContent = '';
             srcSearchInput.value = '';
 
@@ -1755,7 +1823,7 @@
                 renderFiles(files);
                 updateBreadcrumb(path, label);
             } catch {
-                srcGrid.innerHTML = '<div class="src-empty">could not load files</div>';
+                srcGrid.innerHTML = '<div class="src-empty">Could not load files.</div>';
                 srcCount.textContent = '';
             }
         }
@@ -1766,25 +1834,89 @@
                 (b / 1048576).toFixed(1) + ' MB';
 
             if (!files.length) {
-                srcGrid.innerHTML = '<div class="src-empty">no files here</div>';
+                srcGrid.innerHTML = '<div class="src-empty">No files here.</div>';
                 srcCount.textContent = '0 files';
                 return;
             }
 
             srcCount.textContent = files.length + ' file' + (files.length !== 1 ? 's' : '');
 
+            // Icon mapping
+            const iconMap = {
+                'js': '📜',
+                'ts': '📘',
+                'jsx': '⚛️',
+                'tsx': '⚛️',
+                'json': '📋',
+                'css': '🎨',
+                'html': '🌐',
+                'md': '📝',
+                'txt': '📄',
+                'csv': '📊',
+                'xml': '📰',
+                'yaml': '📃',
+                'yml': '📃',
+                'py': '🐍',
+                'rb': '💎',
+                'go': '🐹',
+                'rs': '🦀',
+                'java': '☕',
+                'c': '🔧',
+                'cpp': '🔧',
+                'php': '🐘',
+                'swift': '🦅',
+                'kt': '🎯',
+                'dart': '🎯',
+                'sql': '🗄️',
+                'png': '🖼️',
+                'jpg': '🖼️',
+                'jpeg': '🖼️',
+                'gif': '🖼️',
+                'svg': '🖼️',
+                'webp': '🖼️',
+                'ico': '🖼️',
+                'mp4': '🎬',
+                'mp3': '🎵',
+                'wav': '🎵',
+                'flac': '🎵',
+                'pdf': '📕',
+                'zip': '📦',
+                'tar': '📦',
+                'gz': '📦',
+                'rar': '📦',
+                '7z': '📦',
+                'exe': '⚡',
+                'dmg': '💿',
+                'iso': '💿',
+                'apk': '📱',
+                'ipa': '📱',
+                'deb': '📦',
+                'rpm': '📦',
+                'lock': '🔒',
+                'log': '📋',
+                'env': '🔐',
+                'gitignore': '🙈',
+                'dockerfile': '🐳',
+                'makefile': '🔨',
+                'cmake': '🔨',
+                'conf': '⚙️',
+                'config': '⚙️',
+                'ini': '⚙️',
+            };
+
             srcGrid.innerHTML = files.map(f => {
-                const ext = f.name.includes('.') ? f.name.split('.').pop().toLowerCase() : 'file';
+                const ext = f.name.includes('.') ? f.name.split('.').pop().toLowerCase() : '';
+                const icon = fileIconsEnabled ? (iconMap[ext] || '📄') : '';
+                const iconHtml = icon ? `<span class="file-icon">${icon}</span>` : '';
+                const sizeHtml = fileSizesEnabled ? `<div class="card-size">${sizeStr(f.size)}</div>` : '';
+                const tagHtml = fileTagsEnabled ? `<span class="file-tag">.${ext || 'file'}</span>` : '';
                 return `
               <div class="src-card" data-filename="${f.name}" data-size="${f.size}" data-ext="${ext}">
-                <div class="card-name">
-                  <span class="card-us">_________</span>
-                  ${f.name}
-                </div>
-                <div class="card-size">${sizeStr(f.size)}</div>
+                <div class="card-name">${iconHtml} ${f.name}</div>
+                ${sizeHtml}
                 <div class="card-foot">
-                  <span class="file-tag">.${ext}</span>
-                  <a class="dl-btn" href="${f.download_url}" download="${f.name}" target="_blank">download</a>
+                  ${tagHtml}
+                  <a class="dl-btn" href="${f.download_url}" download="${f.name}" target="_blank">Download</a>
                 </div>
               </div>
             `;
@@ -1794,7 +1926,7 @@
         // ━━━ BREADCRUMB ━━━
         function updateBreadcrumb(path, label) {
             const parts = path.split('/').filter(Boolean);
-            let html = `<span class="bc-us">_________</span> `;
+            let html = `<span>📂</span> `;
             html += `<span class="crumb" onclick="showReadme()">root</span>`;
             let cumulative = '';
             parts.forEach((p, i) => {
@@ -1868,7 +2000,7 @@
                 const folders = root.filter(f => f.type === 'dir' && f.name !== '.github');
 
                 if (!folders.length) {
-                    navTree.innerHTML = '<div class="src-empty" style="padding:14px;">no folders found</div>';
+                    navTree.innerHTML = '<div class="src-empty" style="padding:14px;">No folders found.</div>';
                     return;
                 }
 
@@ -1884,13 +2016,12 @@
                         const files = subItems.filter(f => f.type === 'file');
 
                         html += `<div class="cat-header" id="${catId}" onclick="toggleCat('${catId}','${subId}')">
-                      ${folder.name.toUpperCase()} <span class="cat-chev">▸</span>
+                      <span>${folder.name.toUpperCase()}</span> <span class="cat-chev">▸</span>
                     </div>`;
                         html += `<div class="cat-sub" id="${subId}">`;
 
                         if (subFolders.length > 0) {
                             subFolders.forEach(sf => {
-                                const safe = sf.name.replace(/'/g, "\\'");
                                 html +=
                                     `<div class="nav-item" onclick="loadFolder('${folder.name}/${sf.name}','${sf.name}',this)">${sf.name}</div>`;
                             });
@@ -1898,8 +2029,7 @@
                             html +=
                                 `<div class="nav-item" onclick="loadFolder('${folder.name}','${folder.name}',this)">${folder.name}</div>`;
                         } else {
-                            html +=
-                                `<div class="nav-item" style="color:var(--text-muted);cursor:default;">empty</div>`;
+                            html += `<div class="nav-item" style="color:var(--text-muted);cursor:default;">Empty</div>`;
                         }
                         html += `</div>`;
                         html += `<div class="sidebar-divider"></div>`;
@@ -1907,9 +2037,9 @@
                         // skip
                     }
                 }
-                navTree.innerHTML = html || '<div class="src-empty" style="padding:14px;">no folders accessible</div>';
+                navTree.innerHTML = html || '<div class="src-empty" style="padding:14px;">No folders accessible.</div>';
             } catch {
-                navTree.innerHTML = '<div class="src-empty" style="padding:14px;">could not load repository</div>';
+                navTree.innerHTML = '<div class="src-empty" style="padding:14px;">Could not load repository.</div>';
             }
         }
 
@@ -1918,26 +2048,16 @@
             document.getElementById(subId)?.classList.toggle('open');
         }
 
-        function closeSettings() {
-            settingsOpen = false;
-            settingsDropdown.classList.remove('open');
-            settingsBtn.classList.remove('active');
-        }
-
         // ━━━ INIT ━━━
         showReadme();
         buildNav();
 
         // Close settings on Escape
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && settingsOpen) {
-                settingsOpen = false;
-                settingsDropdown.classList.remove('open');
-                settingsBtn.classList.remove('active');
-            }
+            if (e.key === 'Escape') closeSettings();
         });
 
-        console.log('MerStor loaded — custom UI with underscore buttons, no icons.');
+        console.log('🚀 MerStor loaded — professional UI with background upload and full settings.');
     </script>
 </body>
-  </html>
+    </html>
